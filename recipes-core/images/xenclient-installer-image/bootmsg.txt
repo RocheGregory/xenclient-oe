@@ -1,3 +1,0 @@
-
-0fOpenXT $OPENXT_VERSION (Build $OPENXT_BUILD_ID)
-

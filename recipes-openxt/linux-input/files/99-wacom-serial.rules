@@ -1,3 +1,0 @@
-
-ACTION=="add|change",  SUBSYSTEM=="tty", ATTRS{id}=="WACf*", RUN+="/usr/sbin/inputattach --daemon --wacom-384 /dev/$name"
-
