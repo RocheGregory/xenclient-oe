@@ -19,7 +19,7 @@ python do_licences() {
     headings = ('Package name', 'Description', 'Version', 'Licence',
                 'Home page', 'Source')
 
-    exclude_re = re.compile('^task-|-depends$|-feed-configs$')
+    exclude_re = re.compile('^packagegroup-|-depends$|-feed-configs$')
 
     split_re = re.compile(': ')
 
