@@ -4,7 +4,6 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=f08a446809913fc9b3c718f0eaea0426"
 inherit autotools gtk-icon-cache
 
 # Override RDEPENDS = hicolor-icon-theme from gtk-icon-cache
-RDEPENDS = ""
 RDEPENDS_${PN} = ""
 
 SRC_URI = "http://icon-theme.freedesktop.org/releases/${P}.tar.gz \
