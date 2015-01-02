@@ -4,6 +4,7 @@ DESCRIPTION = "Common X11 Keyboard layouts"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=42fb5e87e0d45120809ed5866524834c"
 DEPENDS = "intltool-native xkbcomp-native glib-2.0"
+
 RDEPENDS_${PN} = "xkbcomp"
 PR = "r4"
 

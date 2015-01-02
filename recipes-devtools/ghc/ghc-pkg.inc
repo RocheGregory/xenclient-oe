@@ -2,6 +2,7 @@ ASNEEDED_pn-${PN} = ""
 DEPENDS  = "ghc-native"
 RDEPENDS_${PN} = "ghc-runtime"
 #RDEPENDS_${PN}_class-native = "ghc-native"
+
 GHC_VERSION = "6.12.1"
 GHC_CACHE_FILE = "${STAGING_LIBDIR_NATIVE}/ghc-${GHC_VERSION}/package.conf.d/package.cache"
 GHC_CACHE_FILE_BACKUP = "${STAGING_DIR}/package.cache.backup"
