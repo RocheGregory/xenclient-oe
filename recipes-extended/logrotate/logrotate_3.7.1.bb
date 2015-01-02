@@ -33,7 +33,7 @@ do_install () {
     install -m 0755 -d ${D}${sysconfdir}/logrotate.d
 }
 
-pkg_postinst () {
+pkg_postinst_${PN} () {
     # Add the logrotate line to /etc/crontab
     grep -q "${base_sbindir}/logrotate" $D${sysconfdir}/crontab || echo "*/5 * * * *   root ${base_sbindir}/logrotate ${sysconfdir}/logrotate.conf" >> $D${sysconfdir}/crontab
 }

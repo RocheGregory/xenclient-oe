@@ -1,5 +1,5 @@
 PRINC = "1"
-pkg_postinst() {
+pkg_postinst_${PN}() {
     if [ -n "$D" ]; then
         exit 0 
     fi
