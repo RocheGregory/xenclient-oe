@@ -4,6 +4,6 @@ def get_poltype(f):
     regex = re.compile('^[\s]*SELINUXTYPE=[\s]*(\w+)[\s]*$')
     for line in config:
         match = regex.match(line)
-	if match is not None:
-	    return match.group(1)
+        if match is not None:
+            return match.group(1)
     return None
