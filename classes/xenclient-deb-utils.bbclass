@@ -3,14 +3,14 @@ DEB_REPO_DIR="${TMPDIR}/deb-xctools-image/"
 SKIP_SSTATE_PACKAGE_CREATION = "1"
 
 def deb_bootstrap_deps(d):
-	deb_suite = bb.data.getVar('DEB_SUITE', d, 1)
-	deb_arch  = bb.data.getVar('DEB_ARCH', d, 1)
+    deb_suite = bb.data.getVar('DEB_SUITE', d, 1)
+    deb_arch  = bb.data.getVar('DEB_ARCH', d, 1)
 
-	result=""
-	for suite in deb_suite.split():
-		for arch in deb_arch.split():
-			result += "debootstrap-%s-%s " % (suite, arch)
-	return result
+    result=""
+    for suite in deb_suite.split():
+        for arch in deb_arch.split():
+            result += "debootstrap-%s-%s " % (suite, arch)
+    return result
 
 PSTAGING_DISABLED = "1"
 
@@ -85,9 +85,9 @@ update_chroot() {
 }
 
 do_clean_prepend() {
-	dir = bb.data.getVar('WORKDIR', d, 1)
-	userid = bb.data.getVar('BUILD_UID', d, 1)
-	os.system("sudo chown -R %s '%s'" % (userid, dir))
+    dir = bb.data.getVar('WORKDIR', d, 1)
+    userid = bb.data.getVar('BUILD_UID', d, 1)
+    os.system("sudo chown -R %s '%s'" % (userid, dir))
 }
 do_clean_append() {
         deb_suite = bb.data.getVar('DEB_SUITE', d, 1)
