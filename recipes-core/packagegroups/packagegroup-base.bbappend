@@ -1,5 +1,5 @@
 PRINC = "1"
 
 RDEPENDS_packagegroup-base-keyboard = "\
-    kbd \
+    console-tools \
     xenclient-console-keymaps"
