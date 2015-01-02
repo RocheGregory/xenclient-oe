@@ -17,7 +17,7 @@ python package_tar_install () {
         bb.error("missing variables (one or more of PKG, PKGFN, IMAGEROOTFS)")
         raise bb.build.FuncFailed
     try:
-        bb.mkdirhier(rootfs)
+        bb.utils.mkdirhier(rootfs)
         os.chdir(rootfs)
     except OSError:
         import sys
@@ -44,13 +44,13 @@ python do_package_tar () {
     if not outdir:
         bb.error("DEPLOY_DIR_TAR not defined, unable to package")
         return
-    bb.mkdirhier(outdir)
+    bb.utils.mkdirhier(outdir)
 
     dvar = d.getVar('D', True)
     if not dvar:
         bb.error("D not defined, unable to package")
         return
-    bb.mkdirhier(dvar)
+    bb.utils.mkdirhier(dvar)
 
     packages = d.getVar('PACKAGES', True)
     if not packages:
@@ -75,10 +75,10 @@ python do_package_tar () {
         bb.data.update_data(localdata)
 
         root = localdata.getVar('ROOT')
-        bb.mkdirhier(root)
+        bb.utils.mkdirhier(root)
         basedir = os.path.dirname(root)
         pkgoutdir = outdir
-        bb.mkdirhier(pkgoutdir)
+        bb.utils.mkdirhier(pkgoutdir)
         bb.build.exec_func('package_tar_fn', localdata)
         tarfn = localdata.getVar('PKGFN', True)
         os.chdir(root)

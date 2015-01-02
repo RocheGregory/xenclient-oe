@@ -66,7 +66,7 @@ python do_image_sources_package_write() {
     # Create package which depends on source package for each of these recipes.
 
     root = d.getVar('IMAGE_SRC_PACKAGE_ROOT', d, 1)
-    bb.mkdirhier(root)
+    bb.utils.mkdirhier(root)
 
     outdir = d.getVar('DEPLOY_DIR_IPK', d, 1)
     if not outdir:
@@ -79,11 +79,11 @@ python do_image_sources_package_write() {
     arch = d.getVar('IMAGE_SRC_PACKAGE_ARCH', d, 1)
     pkgoutdir = os.path.join(outdir, arch)
 
-    bb.mkdirhier(pkgoutdir)
+    bb.utils.mkdirhier(pkgoutdir)
     os.chdir(root)
 
     controldir = os.path.join(root, "CONTROL")
-    bb.mkdirhier(controldir)
+    bb.utils.mkdirhier(controldir)
     try:
         ctrlfile = file(os.path.join(controldir, "control"), 'w')
     except OSError:
