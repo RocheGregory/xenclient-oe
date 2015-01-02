@@ -10,6 +10,7 @@ def gen_dev_so_excludes(d):
     excludes = []
     pkgdest = d.getVar('PKGDEST', True)
     pkg = d.getVar("PN", True)
+
     top = os.path.join(pkgdest, pkg + "-dev")
     if not os.path.exists(top):
        return ""
