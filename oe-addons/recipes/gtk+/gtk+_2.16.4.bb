@@ -24,7 +24,7 @@ PACKAGES_DYNAMIC = "gtk-module-* gdk-pixbuf-loader-* gtk-immodule-* gtk-printbac
 python populate_packages_prepend () {
     import os.path
 
-    prologue = bb.data.getVar("postinst_prologue", d, 1)
+    prologue = d.getVar("postinst_prologue", d, 1)
 
     gtk_libdir = bb.data.expand('${libdir}/gtk-2.0/${LIBV}', d)
     loaders_root = os.path.join(gtk_libdir, 'loaders')
@@ -37,8 +37,8 @@ python populate_packages_prepend () {
     do_split_packages(d, printmodules_root, '^libprintbackend-(.*)\.so$', 'gtk-printbackend-%s', 'GTK printbackend module for %s', extra_depends='')
     do_split_packages(d, modules_root, '^lib(.*)\.so$', 'gtk-module-%s', 'GTK module for %s', extra_depends='')
 
-    if (bb.data.getVar('DEBIAN_NAMES', d, 1)):
-        bb.data.setVar('PKG_${PN}', 'libgtk-2.0', d)
+    if (d.getVar('DEBIAN_NAMES', d, 1)):
+        d.setVar('PKG_${PN}', 'libgtk-2.0', d)
 }
 
 # gail is part of gtk+ since gtk+-2.13.0 (targetting >=GNOME 2.23):

@@ -437,7 +437,7 @@ python sstate_task_postfunc () {
     sstate_install(shared_state, d)
     for intercept in shared_state['interceptfuncs']:
         bb.build.exec_func(intercept, d)
-    if bb.data.getVar("SKIP_SSTATE_PACKAGE_CREATION", d, True) != "1":
+    if d.getVar("SKIP_SSTATE_PACKAGE_CREATION", d, True) != "1":
         sstate_package(shared_state, d)
 }
   

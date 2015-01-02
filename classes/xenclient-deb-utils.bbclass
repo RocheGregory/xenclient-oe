@@ -3,8 +3,8 @@ DEB_REPO_DIR="${TMPDIR}/deb-xctools-image/"
 SKIP_SSTATE_PACKAGE_CREATION = "1"
 
 def deb_bootstrap_deps(d):
-    deb_suite = bb.data.getVar('DEB_SUITE', d, 1)
-    deb_arch  = bb.data.getVar('DEB_ARCH', d, 1)
+    deb_suite = d.getVar('DEB_SUITE', d, 1)
+    deb_arch  = d.getVar('DEB_ARCH', d, 1)
 
     result=""
     for suite in deb_suite.split():
@@ -85,18 +85,18 @@ update_chroot() {
 }
 
 do_clean_prepend() {
-    dir = bb.data.getVar('WORKDIR', d, 1)
-    userid = bb.data.getVar('BUILD_UID', d, 1)
+    dir = d.getVar('WORKDIR', d, 1)
+    userid = d.getVar('BUILD_UID', d, 1)
     os.system("sudo chown -R %s '%s'" % (userid, dir))
 }
 do_clean_append() {
-        deb_suite = bb.data.getVar('DEB_SUITE', d, 1)
-        deb_arch  = bb.data.getVar('DEB_ARCH', d, 1)
-        chroot_path = bb.data.getVar('CHROOT_PATH', d, 1)
+        deb_suite = d.getVar('DEB_SUITE', d, 1)
+        deb_arch  = d.getVar('DEB_ARCH', d, 1)
+        chroot_path = d.getVar('CHROOT_PATH', d, 1)
         if chroot_path == '' or chroot_path is None or len(chroot_path) < 2:
                 return
-        WORKDIR = bb.data.getVar('WORKDIR', d, 1)
-        D = bb.data.getVar('D', d, 1)
+        WORKDIR = d.getVar('WORKDIR', d, 1)
+        D = d.getVar('D', d, 1)
         if WORKDIR is None or D is None: return
         for suite in deb_suite.split():
                 if suite == '': continue
