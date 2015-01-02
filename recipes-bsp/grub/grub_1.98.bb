@@ -12,7 +12,7 @@ INSANE_SKIP_${PN} = "arch"
 
 S = "${WORKDIR}/${PN}-${PV}"
 
-##SRC_URI = "svn://svn.savannah.gnu.org/grub/trunk;module=${PN};proto=http \
+##SRC_URI = "svn://svn.savannah.gnu.org/grub/trunk;module=${PN};protocol=http \
 ##           file://configure_grub_disable_manpages.patch;patch=1"
 
 # Avoid make conflict for bison
