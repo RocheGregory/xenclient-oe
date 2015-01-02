@@ -72,7 +72,7 @@ python do_src_package_archive() {
                                   "source directory, so take a copy of your "
                                   "changes first!" % (pn))
 
-    bb.mkdirhier(root)
+    bb.utils.mkdirhier(root)
     if 'work-shared' in s: 
         bb.note("xenclient-src-package-real: Skipping package '%s' as source "
                 "directory '%s' is located in work-shared" % (pn, s))
@@ -91,7 +91,7 @@ python do_src_package_archive() {
 
     for entry in entries:
         archivedir = os.path.abspath(os.path.join(root, entry, pn))
-        bb.mkdirhier(archivedir)
+        bb.utils.mkdirhier(archivedir)
 
         # For consistency with ipkg-build, don't include PE in the archive name.
         name = "%s_%s-%s" % (pn, pv, pr)
@@ -174,11 +174,11 @@ python do_src_package_write() {
     arch = d.getVar('SRC_PACKAGE_ARCH', d, 1)
     pkgoutdir = os.path.join(outdir, arch)
 
-    bb.mkdirhier(pkgoutdir)
+    bb.utils.mkdirhier(pkgoutdir)
     os.chdir(root)
 
     controldir = os.path.join(root, "CONTROL")
-    bb.mkdirhier(controldir)
+    bb.utils.mkdirhier(controldir)
     try:
         ctrlfile = file(os.path.join(controldir, "control"), 'w')
     except OSError:

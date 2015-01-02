@@ -111,7 +111,7 @@ def hash_locals(d):
 
 python do_freeze_uris() {
     freezer_path = d.getVar("FREEZER_PATH", d, True)
-    bb.mkdirhier(freezer_path)
+    bb.utils.mkdirhier(freezer_path)
     rewrite_uris(d)
     hash_locals(d)
 }
