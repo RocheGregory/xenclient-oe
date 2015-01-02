@@ -26,7 +26,7 @@ do_install_append() {
         install ${WORKDIR}/rsyslog.logrotate ${D}${sysconfdir}/logrotate.d/rsyslog
 }
 
-pkg_postinst() {
+pkg_postinst_${PN}() {
         update-rc.d -f syslog remove
 }
 
