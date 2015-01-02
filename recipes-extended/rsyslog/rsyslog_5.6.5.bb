@@ -31,7 +31,7 @@ pkg_postinst_${PN}() {
 }
 
 # TODO: Remove when syslogd is kicked out from our busybox.
-pkg_postrm() {
+pkg_postrm_${PN}() {
         update-rc.d syslog add 5
 }
 
