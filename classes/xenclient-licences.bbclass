@@ -25,7 +25,7 @@ python do_licences() {
 
     # Read package info from the /usr/lib/opkg/info directory within the image
 
-    info_dir = bb.data.getVar('IMAGE_ROOTFS', d, 1) + '/usr/lib/opkg/info'
+    info_dir = d.getVar('IMAGE_ROOTFS', d, 1) + '/usr/lib/opkg/info'
 
     packages = []
 
@@ -49,8 +49,8 @@ python do_licences() {
     packages.sort(key=operator.itemgetter('Package'))
 
     output_file = \
-        bb.data.getVar('DEPLOY_DIR_IMAGE', d, 1) + '/' + \
-        bb.data.getVar('IMAGE_BASENAME', d, 1) + '-licences.csv'
+        d.getVar('DEPLOY_DIR_IMAGE', d, 1) + '/' + \
+        d.getVar('IMAGE_BASENAME', d, 1) + '-licences.csv'
 
     file = open(output_file, 'w')
 
