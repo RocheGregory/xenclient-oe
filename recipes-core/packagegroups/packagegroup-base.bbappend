@@ -1,5 +1,5 @@
 PRINC = "1"
 
-RDEPENDS_task-base-keyboard = "\
+RDEPENDS_packagegroup-base-keyboard = "\
     console-tools \
     xenclient-console-keymaps"
