@@ -38,7 +38,7 @@ pkg_postinst_${PN} () {
     grep -q "${base_sbindir}/logrotate" $D${sysconfdir}/crontab || echo "*/5 * * * *   root ${base_sbindir}/logrotate ${sysconfdir}/logrotate.conf" >> $D${sysconfdir}/crontab
 }
 
-pkg_postrm() {
+pkg_postrm_${PN} () {
     # Remove the logrotate line from /etc/crontab
     grep -v ${base_sbindir}/logrotate ${sysconfdir}/crontab > ${sysconfdir}/crontab.no-${PF}
     mv ${sysconfdir}/crontab.no-${PF} ${sysconfdir}/crontab
