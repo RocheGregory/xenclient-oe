@@ -97,7 +97,7 @@ def sstate_install(ss, d):
 
     sharedfiles = []
     shareddirs = []
-    bb.mkdirhier(d.expand("${SSTATE_MANIFESTS}"))
+    bb.utils.mkdirhier(d.expand("${SSTATE_MANIFESTS}"))
     manifest = d.expand("${SSTATE_MANFILEPREFIX}.%s" % ss['name'])
 
     if os.access(manifest, os.R_OK):
@@ -150,7 +150,7 @@ def sstate_installpkg(ss, d):
         # remove dir if it exists, ensure any parent directories do exist
         if os.path.exists(dir):
             oe.path.remove(dir)
-        bb.mkdirhier(dir)
+        bb.utils.mkdirhier(dir)
         oe.path.remove(dir)
 
     sstateinst = d.expand("${WORKDIR}/sstate-install-%s/" % ss['name'])
@@ -199,7 +199,7 @@ def sstate_installpkg(ss, d):
         workdir = d.getVar('WORKDIR', True)
         src = sstateinst + "/" + plain.replace(workdir, '')
         dest = plain
-        bb.mkdirhier(src)
+        bb.utils.mkdirhier(src)
         prepdir(dest)
         os.rename(src, dest)
 
@@ -353,8 +353,8 @@ def sstate_package(ss, d):
 
     sstatebuild = d.expand("${WORKDIR}/sstate-build-%s/" % ss['name'])
     sstatepkg = d.getVar('SSTATE_PKG', True) + '_'+ ss['name'] + ".tgz"
-    bb.mkdirhier(sstatebuild)
-    bb.mkdirhier(os.path.dirname(sstatepkg))
+    bb.utils.mkdirhier(sstatebuild)
+    bb.utils.mkdirhier(os.path.dirname(sstatepkg))
     for state in ss['dirs']:
         srcbase = state[0].rstrip("/").rsplit('/', 1)[0]
         for walkroot, dirs, files in os.walk(state[1]):
@@ -372,8 +372,8 @@ def sstate_package(ss, d):
     workdir = d.getVar('WORKDIR', True)
     for plain in ss['plaindirs']:
         pdir = plain.replace(workdir, sstatebuild)
-        bb.mkdirhier(plain)
-        bb.mkdirhier(pdir)
+        bb.utils.mkdirhier(plain)
+        bb.utils.mkdirhier(pdir)
         oe.path.copytree(plain, pdir)
 
     d.setVar('SSTATE_BUILDDIR', sstatebuild)
@@ -400,7 +400,7 @@ def pstaging_fetch(sstatepkg, d):
     dldir = localdata.expand("${SSTATE_DIR}")
     srcuri = "file://" + os.path.basename(sstatepkg)
 
-    bb.mkdirhier(dldir)
+    bb.utils.mkdirhier(dldir)
 
     localdata.setVar('DL_DIR', dldir)
     localdata.setVar('PREMIRRORS', mirrors)
