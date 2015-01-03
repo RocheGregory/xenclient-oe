@@ -5,12 +5,12 @@ LIC_FILES_CHKSUM = "file://global.h;beginline=5;endline=22;md5=05863d75c2c6d81df
 DEPENDS = "zlib"
 INC_PR = "r3"
 
-S = "${WORKDIR}/squashfs${@d.getVar('PV',d,1).replace('r','-r')}/squashfs-tools"
+S = "${WORKDIR}/squashfs${@d.getVar('PV',1).replace('r','-r')}/squashfs-tools"
 
 # required to share same place with -lzma specific packages
 FILESPATHPKG = "squashfs-tools-${PV}:squashfs-tools:files"
 
-SRC_URI ?= "${SOURCEFORGE_MIRROR}/squashfs/squashfs${@d.getVar('PV',d,1).replace('r','-r')}.tar.gz"
+SRC_URI ?= "${SOURCEFORGE_MIRROR}/squashfs/squashfs${@d.getVar('PV',1).replace('r','-r')}.tar.gz"
 
 prefix = ""
 

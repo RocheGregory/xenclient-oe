@@ -45,12 +45,12 @@ python __anonymous () {
 
     import bb
     
-    devicetree = d.getVar('KERNEL_DEVICETREE', d, 1) or ''
+    devicetree = d.getVar('KERNEL_DEVICETREE', 1) or ''
     if devicetree:
-        depends = d.getVar("DEPENDS", d, 1)
-        d.setVar("DEPENDS", "%s dtc-native" % depends, d)
-        packages = d.getVar("PACKAGES", d, 1)
-        d.setVar("PACKAGES", "%s kernel-devicetree" % packages, d)
+        depends = d.getVar("DEPENDS", 1)
+        d.setVar("DEPENDS", "%s dtc-native" % depends)
+        packages = d.getVar("PACKAGES", 1)
+        d.setVar("PACKAGES", "%s kernel-devicetree" % packages)
 }
 
 do_configure_prepend() {

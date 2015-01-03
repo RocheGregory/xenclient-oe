@@ -59,7 +59,7 @@ python do_package_tar () {
 
     for pkg in packages.split():
         localdata = bb.data.createCopy(d)
-        pkgdest = d.getVar('PKGDEST', d, 1)
+        pkgdest = d.getVar('PKGDEST', 1)
         root = "%s/%s" % (pkgdest, pkg)
 
         localdata.setVar('ROOT', '')
