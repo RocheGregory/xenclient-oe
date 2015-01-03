@@ -27,8 +27,9 @@ RDEPENDS_${PN} += "python \
 PV = "0+git${SRCPV}"
 
 SRCREV = "${AUTOREV}"
-SRC_URI = "git://${OPENXT_GIT_MIRROR}/sync-client.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
-           file://sync-client-daemon.initscript"
+SRC_URI = "git://${OPENXT_GIT_MIRROR}/sync-client.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} "
+
+SRC_URI_xenclient-syncvm += "file://sync-client-daemon.initscript"
 
 INITSCRIPT_NAME = "sync-client-daemon"
 INITSCRIPT_PARAMS = "defaults 85"
