@@ -49,6 +49,7 @@ EXTRA_INITRAMFS_LIBS = "\
 
 post_rootfs_shell_commands() {
 	opkg-cl -f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} ${OPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
+
 	install -d ${IMAGE_ROOTFS}/lib;
 	for a in ${EXTRA_INITRAMFS_LIBS}; do
 		install -m 0755 ${STAGING_DIR_HOST}/$a ${IMAGE_ROOTFS}/lib;
