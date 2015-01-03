@@ -3,11 +3,11 @@
 python () {
     import bb
     def interposeSetVar(name, value, d):
-        path = d.getVar("FILE", d, True)
+        path = d.getVar("FILE", True)
         if not path:
             path = "Unknown"
         file = path.split("/")[-1]
-        runqueue = d.getVar("__RUNQUEUE_DO_NOT_USE_EXTERNALLY", d, False)
+        runqueue = d.getVar("__RUNQUEUE_DO_NOT_USE_EXTERNALLY", False)
         if not runqueue:
             task = "Unknown"
         else:
