@@ -1,4 +1,4 @@
-RDEPENDS += "kernel-image update-modules"
+RDEPENDS_${PN} += "kernel-image update-modules"
 DEPENDS += "virtual/kernel"
 
 inherit module-base
@@ -36,14 +36,14 @@ module_do_install() {
 	           modules_install
 }
 
-pkg_postinst_append () {
+pkg_postinst_${PN}_append () {
 if [ -z "$D" ]; then
 	depmod -a
 	update-modules || true
 fi
 }
 
-pkg_postrm_append () {
+pkg_postrm_${PN}_append () {
 update-modules || true
 }
 
