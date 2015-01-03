@@ -6,6 +6,8 @@ PR .= "+xc1"
 
 PV = "0+git${SRCPV}"
 
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
 SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/ocaml.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
            file://0007-Fix-ocamlopt-w.r.t.-binutils-2.21.patch;patch=1 \
