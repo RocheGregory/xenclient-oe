@@ -7,5 +7,5 @@ SRC_URI += " \
             file://pciback-restrictive-attr.patch;striplevel=1 \
             "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-3.11"
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-3.11:"
 
