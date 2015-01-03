@@ -385,8 +385,8 @@ python populate_packages_prepend () {
     def get_dependencies(file, pattern, format):
         # file no longer includes PKGD
         file = file.replace(d.getVar('PKGD', True) or '', '', 1)
-                # instead is prefixed with /lib/modules/${KERNEL_VERSION}
-                file = file.replace("/lib/modules/%s/" % d.getVar('KERNEL_VERSION', True) or '', '', 1)
+        # instead is prefixed with /lib/modules/${KERNEL_VERSION}
+        file = file.replace("/lib/modules/%s/" % d.getVar('KERNEL_VERSION', True) or '', '', 1)
 
         if module_deps.has_key(file):
             import re
