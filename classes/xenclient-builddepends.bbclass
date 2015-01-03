@@ -6,7 +6,7 @@ ALLOW_EMPTY_${PN}${TARGET_BUILDDEPENDS_PACKAGE_SUFFIX} = "1"
 python create_builddepends_package() {
     import re
     def get_var_as_list(varname):
-        result = d.getVar(varname, d, 1)
+        result = d.getVar(varname, 1)
         if result:
             return result.split()
         else:
@@ -14,7 +14,7 @@ python create_builddepends_package() {
     def append_var_from_list(varname, list_):
         value = get_var_as_list(varname)
         value.extend(list_)
-        d.setVar(varname, " ".join(value), d)
+        d.setVar(varname, " ".join(value))
     def filter_list(list_, regex_list):
         filterre = re.compile("|".join(regex_list))
         return [ i for i in list_ if not filterre.search(i) ]
@@ -30,13 +30,13 @@ python create_builddepends_package() {
                 return result
         return None
 
-    my_package_suffix = d.getVar("TARGET_BUILDDEPENDS_PACKAGE_SUFFIX", d, 1)
+    my_package_suffix = d.getVar("TARGET_BUILDDEPENDS_PACKAGE_SUFFIX", 1)
     if not my_package_suffix:
         raise bb.build.FuncFailed("No suffix for build dependency package defined")
     autoremoved_builddepends = [ "-dbg$", "-locale$", "-doc$" ]
-#    if d.getVar("GENERATE_STATIC_TARGET_BUILDDEPENDS", d, 1) != "1": # automaticly remove -static dependencies if not disabled
+#    if d.getVar("GENERATE_STATIC_TARGET_BUILDDEPENDS", 1) != "1": # automaticly remove -static dependencies if not disabled
 #        autoremoved_builddepends.append("-static$");
-#    if d.getVar("GENERATE_BIN_TARGET_BUILDDEPENDS", d, 1) != "1": # automaticly remove -bin dependencies if not disabled
+#    if d.getVar("GENERATE_BIN_TARGET_BUILDDEPENDS", 1) != "1": # automaticly remove -bin dependencies if not disabled
 #        autoremoved_builddepends.append("-bin$");
 
     unwanted_builddepends = get_var_as_list('UNWANTED_TARGET_BUILDDEPENDS')
@@ -66,7 +66,7 @@ python create_builddepends_package() {
     builddepends = [ i for i in builddepends if i not in unwanted_builddepends ]
     builddepends.extend(additional_builddepends)
     
-    pn = d.getVar("PN", d, 1)
+    pn = d.getVar("PN", 1)
     bb.note("Target build depends for %s: %s" % (pn, " ".join(builddepends)))
     my_package_name = "%s%s" % (pn, my_package_suffix)
     #append_var_from_list("PACKAGES", [ my_package_name ])
