@@ -9,6 +9,6 @@ SRC_URI += " \
             file://0002-Add-thorough-reset-interface-to-pciback-s-sysfs.patch;striplevel=1 \
             "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-3.11"
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-3.11:"
 
 PR="1"
