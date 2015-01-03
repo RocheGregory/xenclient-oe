@@ -21,10 +21,10 @@ EXTRA_OECONF = " \
 		"
 
 python __anonymous() {
-    f = d.getVar("CURL_FEATURES", d, True).split(",")
-    oeconf = d.getVar("EXTRA_OECONF", d, False)
-    deps = d.getVar("DEPENDS", d, False).split()
-    pn = d.getVar("PN", d, True)
+    f = d.getVar("CURL_FEATURES", True).split(",")
+    oeconf = d.getVar("EXTRA_OECONF", False)
+    deps = d.getVar("DEPENDS", False).split()
+    pn = d.getVar("PN", True)
     if "native" in pn:
         native = "-native"
     else:
@@ -54,8 +54,8 @@ python __anonymous() {
         deps.append("c-ares" + native)
     else:
         oeconf += " --disable-ares"
-    d.setVar('EXTRA_OECONF', oeconf, d)
-    d.setVar('DEPENDS', " ".join(deps), d)
+    d.setVar('EXTRA_OECONF', oeconf)
+    d.setVar('DEPENDS', " ".join(deps))
 }
 
 do_configure_prepend() {

@@ -18,7 +18,7 @@ INITSCRIPT_PARAMS = "defaults 29"
 S = "${WORKDIR}"
 
 inherit update-rc.d xenclient
-inherit ${@"xenclient-simple-deb"if(d.getVar("MACHINE",d,1)=="xenclient-nilfvm")else("null")}
+inherit ${@"xenclient-simple-deb"if(d.getVar("MACHINE",1)=="xenclient-nilfvm")else("null")}
 
 DEB_SUITE = "wheezy"
 DEB_ARCH = "i386"

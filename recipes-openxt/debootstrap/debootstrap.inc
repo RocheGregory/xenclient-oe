@@ -10,7 +10,7 @@ S = "${WORKDIR}/${DEBOOTSTRAP_SUITE}_${DEBOOTSTRAP_ARCH}"
 	
 
 python do_clean_append() {
-    staging_dir = "%s/debootstrap/%s_%s" % (d.getVar('STAGING_DIR',d,1), d.getVar('DEBOOTSTRAP_SUITE',d,1), d.getVar('DEBOOTSTRAP_ARCH', d,1))
+    staging_dir = "%s/debootstrap/%s_%s" % (d.getVar('STAGING_DIR',1), d.getVar('DEBOOTSTRAP_SUITE',1), d.getVar('DEBOOTSTRAP_ARCH',1))
     os.system("[ -d '%s' ] && sudo rm -rf --one-file-system '%s'" % (staging_dir, staging_dir))
 }
 
@@ -42,8 +42,8 @@ python do_install() {
         return
     src_uri = bb.data.expand(src_uri, localdata)
     local = bb.data.expand(bb.fetch.localpath(src_uri, localdata), localdata)
-    stage_dir  = "%s/debootstrap/" % (d.getVar('STAGING_DIR',d,1),)
-    chroot_dir = "%s/%s_%s" % (stage_dir, d.getVar('DEBOOTSTRAP_SUITE',d,1), d.getVar('DEBOOTSTRAP_ARCH', d,1))
+    stage_dir  = "%s/debootstrap/" % (d.getVar('STAGING_DIR',1),)
+    chroot_dir = "%s/%s_%s" % (stage_dir, d.getVar('DEBOOTSTRAP_SUITE',1), d.getVar('DEBOOTSTRAP_ARCH',1))
     if os.path.isdir(chroot_dir):
         return
     os.system("mkdir -p '%s'" % (stage_dir,))

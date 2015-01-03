@@ -9,7 +9,7 @@ PR      = "r6"
 def gen_dev_so_excludes(d):
     excludes = []
     pkgdest = d.getVar('PKGDEST', True)
-    pkg = d.getVar("PN", d, True)
+    pkg = d.getVar("PN", True)
     top = os.path.join(pkgdest, pkg + "-dev")
     if not os.path.exists(top):
        return ""
@@ -22,8 +22,8 @@ def gen_dev_so_excludes(d):
 PRIVATE_LIBS_${PN}-dev = "${@gen_dev_so_excludes(d)}"
 
 python() {
-    pn = d.getVar("PN", d, True)
-    pl = d.getVar("PRIVATE_LIBS_" + pn + "-dev", d, True)
+    pn = d.getVar("PN", True)
+    pl = d.getVar("PRIVATE_LIBS_" + pn + "-dev", True)
 }
 
 
