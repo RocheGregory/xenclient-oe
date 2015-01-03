@@ -35,35 +35,38 @@ IMAGE_INSTALL = "\
 #zap root password for release images
 ROOTFS_POSTPROCESS_COMMAND += '${@base_conditional("DISTRO_TYPE", "release", "zap_root_password; ", "",d)}'
 
-ROOTFS_POSTPROCESS_COMMAND += "sed -i 's|root:x:0:0:root:/home/root:/bin/sh|root:x:0:0:root:/root:/bin/bash|' ${IMAGE_ROOTFS}/etc/passwd;"
+post_rootfs_shell_commands() {
+	sed -i 's|root:x:0:0:root:/home/root:/bin/sh|root:x:0:0:root:/root:/bin/bash|' ${IMAGE_ROOTFS}/etc/passwd;
 
-ROOTFS_POSTPROCESS_COMMAND += "rm ${IMAGE_ROOTFS}/etc/hosts; ln -s /tmp/hosts ${IMAGE_ROOTFS}/etc/hosts;"
+	rm ${IMAGE_ROOTFS}/etc/hosts; ln -s /tmp/hosts ${IMAGE_ROOTFS}/etc/hosts;
 
-# Add initramfs
-ROOTFS_POSTPROCESS_COMMAND += "cat ${DEPLOY_DIR_IMAGE}/xenclient-initramfs-image-xenclient-dom0.cpio.gz > ${IMAGE_ROOTFS}/boot/initramfs.gz ;" 
+	# Add initramfs
+	cat ${DEPLOY_DIR_IMAGE}/xenclient-initramfs-image-xenclient-dom0.cpio.gz > ${IMAGE_ROOTFS}/boot/initramfs.gz ;
 
-ROOTFS_POSTPROCESS_COMMAND += "sed -i 's|1:2345:respawn:/sbin/getty 38400 tty1|#1:2345:respawn:/sbin/getty 38400 tty1|' ${IMAGE_ROOTFS}/etc/inittab ;" 
+	sed -i 's|1:2345:respawn:/sbin/getty 38400 tty1|#1:2345:respawn:/sbin/getty 38400 tty1|' ${IMAGE_ROOTFS}/etc/inittab ;
 
-# Add input demon to inittab (temp hack)
-ROOTFS_POSTPROCESS_COMMAND += "echo 'xi:5:respawn:/usr/bin/input_server >/dev/null 2>&1' >> ${IMAGE_ROOTFS}/etc/inittab ;"
-# Same with surfman
-ROOTFS_POSTPROCESS_COMMAND += "echo 'xs:5:respawn:/usr/bin/watch_surfman >/dev/null 2>&1' >> ${IMAGE_ROOTFS}/etc/inittab ;"
+	# Add input demon to inittab (temp hack)
+	echo 'xi:5:respawn:/usr/bin/input_server >/dev/null 2>&1' >> ${IMAGE_ROOTFS}/etc/inittab ;
+	# Same with surfman
+	echo 'xs:5:respawn:/usr/bin/watch_surfman >/dev/null 2>&1' >> ${IMAGE_ROOTFS}/etc/inittab ;
 
-# Add dom0 console getty
-ROOTFS_POSTPROCESS_COMMAND += "echo '1:2345:respawn:/sbin/getty 38400 tty1' >> ${IMAGE_ROOTFS}/etc/inittab ;"
+	# Add dom0 console getty
+	echo '1:2345:respawn:/sbin/getty 38400 tty1' >> ${IMAGE_ROOTFS}/etc/inittab ;
 
-# Create mountpoint for /mnt/secure
-ROOTFS_POSTPROCESS_COMMAND += "mkdir -p ${IMAGE_ROOTFS}/mnt/secure ;"
+	# Create mountpoint for /mnt/secure
+	mkdir -p ${IMAGE_ROOTFS}/mnt/secure ;
 
-# Create mountpoint for boot/system
-ROOTFS_POSTPROCESS_COMMAND += "mkdir -p ${IMAGE_ROOTFS}/boot/system ;"
+	# Create mountpoint for boot/system
+	mkdir -p ${IMAGE_ROOTFS}/boot/system ;
 
-# Remove unwanted packages specified above
-ROOTFS_POSTPROCESS_COMMAND += "opkg-cl ${IPKG_ARGS} -force-depends \
-                                remove ${PACKAGE_REMOVE};"
+	# Remove unwanted packages specified above
+	opkg-cl ${IPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
 
-# Write coredumps in /var/cores
-ROOTFS_POSTPROCESS_COMMAND += "echo 'kernel.core_pattern = /var/cores/%e-%t.%p.core' >> ${IMAGE_ROOTFS}/etc/sysctl.conf ;"
+	# Write coredumps in /var/cores
+	echo 'kernel.core_pattern = /var/cores/%e-%t.%p.core' >> ${IMAGE_ROOTFS}/etc/sysctl.conf ;
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
 
 inherit image
 #inherit validate-package-versions
