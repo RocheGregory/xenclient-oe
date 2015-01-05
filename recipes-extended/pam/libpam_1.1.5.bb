@@ -14,7 +14,8 @@ PR = "r3"
 SRC_URI = "https://fedorahosted.org/releases/l/i/linux-pam/Linux-PAM-${PV}.tar.bz2 \
            file://99_pam \
            file://pam.d/* \
-           file://libpam-xtests.patch"
+           file://libpam-xtests.patch \
+           file://fixsepbuild.patch "
 
 SRC_URI_append_libc-uclibc = " file://pam-no-innetgr.patch"
 
