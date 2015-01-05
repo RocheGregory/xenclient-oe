@@ -12,7 +12,8 @@ PR = "r0"
 
 SRC_URI = "http://curl.haxx.se/download/curl-${PV}.tar.bz2 \
            file://noldlibpath.patch \
-           file://pkgconfig_fix.patch"
+           file://pkgconfig_fix.patch \
+           file://fix-newer-autoconf.patch "
 
 SRC_URI[md5sum] = "f912221d75eb8d8fe08900eaf011b023"
 SRC_URI[sha256sum] = "ebdb111088ff8b0e05b1d1b075e9f1608285e8105cc51e21caacf33d01812c16"
@@ -33,7 +34,7 @@ CURLGNUTLS_virtclass-native = "--without-gnutls"
 CURLGNUTLS_virtclass-nativesdk = "--without-gnutls"
 
 do_configure_prepend() {
-	sed -i s:OPT_GNUTLS/bin:OPT_GNUTLS:g configure.ac
+	sed -i s:OPT_GNUTLS/bin:OPT_GNUTLS:g ${S}/configure.ac
 }
 
 PACKAGES += "${PN}-certs libcurl libcurl-dev libcurl-doc"
