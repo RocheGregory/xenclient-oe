@@ -16,6 +16,8 @@ SRC_URI = "http://downloads.sourceforge.net/${PN}/${PN}-${PV}.tar.gz \
            file://45-trousers.rules \
 "
 
+CFLAGS_append = " -Wno-error=unused-parameter -Wno-error=strict-aliasing"
+
 inherit xenclient update-rc.d useradd
 
 INITSCRIPT_PACKAGES = "${PN}"
