@@ -1,8 +1,8 @@
-Index: trunk/libopkg/opkg_conf.c
-===================================================================
---- trunk.orig/libopkg/opkg_conf.c	2012-10-04 20:42:26.511216944 -0400
-+++ trunk/libopkg/opkg_conf.c	2012-10-04 20:43:12.747151301 -0400
-@@ -512,7 +512,7 @@
+diff --git a/libopkg/opkg_conf.c b/libopkg/opkg_conf.c
+index 1e65bad..7f68aee 100644
+--- a/libopkg/opkg_conf.c
++++ b/libopkg/opkg_conf.c
+@@ -513,7 +513,7 @@ opkg_conf_load(void)
  	else
  		sprintf_alloc (&lock_file, "%s", OPKGLOCKFILE);
  
