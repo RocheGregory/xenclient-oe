@@ -4,7 +4,7 @@ DESCRIPTION = "XenClient Network Slave"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM="file://../COPYING;md5=4641e94ec96f98fabc56ff9cc48be14b"
 DEPENDS = "carrier-detect libxchutils xenclient-rpcgen-native xenclient-idl ghc-native ghc-hsyslog libxch-rpc libxchxenstore networkmanager ghc-regex-posix ghc-deepseq ghc-text ghc-mtl ghc-network"
-RDEPENDS_${PN} += "glibc-gconv-utf-32 ghc-runtime-native"
+RDEPENDS_${PN} += "glibc-gconv-utf-32 ghc-runtime"
 
 PV = "0+git${SRCPV}"
 
