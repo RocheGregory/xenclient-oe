@@ -1,6 +1,7 @@
 ASNEEDED_pn-${PN} = ""
 DEPENDS  = "ghc-native"
 RDEPENDS_${PN} = "ghc-runtime"
+RDEPENDS_${PN}_class-native = "ghc-native"
 GHC_VERSION = "6.12.3"
 GHC_CACHE_FILE = "${STAGING_LIBDIR_NATIVE}/ghc-${GHC_VERSION}/package.conf.d/package.cache"
 GHC_CACHE_FILE_BACKUP = "${STAGING_DIR}/package.cache.backup"
@@ -17,9 +18,9 @@ LOCAL_GHC_PACKAGE_DATABASE = "${S}/local-packages.db"
 export GHC_PACKAGE_PATH = "${LOCAL_GHC_PACKAGE_DATABASE}:"
 
 # ghc libs have (and always had) broken rpath disable sanity checking for now
-INSANE_SKIP_${PN} = "1"
-INSANE_SKIP_${PN}-dev = "1"
-INSANE_SKIP_${PN}-dbg = "1"
+INSANE_SKIP_${PN} = "rpaths"
+INSANE_SKIP_${PN}-dev = "rpaths staticdev"
+INSANE_SKIP_${PN}-dbg = "rpaths"
 
 
 do_configure_prepend() {
@@ -29,7 +30,7 @@ do_configure_prepend() {
         for file in ${STAGING_LIBDIR}/ghc-local/*.conf
         do
             if [ -e "$file" ]; then
-                    cat "$file"| sed -e "s|: */usr/lib|: ${STAGING_LIBDIR}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
+                    cat "$file"| sed -e "s|/usr/lib|${STAGING_LIBDIR}|" -e "s|/usr/include|${STAGING_INCDIR}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
             fi
         done
     fi
