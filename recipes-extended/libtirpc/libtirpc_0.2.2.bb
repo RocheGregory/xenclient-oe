@@ -1,3 +1,7 @@
+# Needed as libtirpc 0.2.4 provides xdr_quad_t and xdr_u_quad_t.  Our libicbinn
+# has a dirty hack to provide them also.  That needs to be resolved before using
+# upstream libtirpc
+
 SUMMARY = "Transport-Independent RPC library"
 DESCRIPTION = "Libtirpc is a port of Suns Transport-Independent RPC library to Linux"
 SECTION = "libs/network"
@@ -16,11 +20,15 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BPN}-${PV}.tar.bz2;name=libtirpc \
            file://libtirpc-0.2.1-fortify.patch \
            file://libtirpc-0.2.2-rpc-des-prot.patch \
            file://remove-des-crypt.patch \
+           file://compile-static-with-fPIC.patch \
+           file://fix-reference-to-etc_netconfig.patch \
           "
+
 SRC_URI[libtirpc.md5sum] = "74c41c15c2909f7d11d9c7bfa7db6273"
 SRC_URI[libtirpc.sha256sum] = "f05eb17c85d62423858b8f74512cfe66a9ae1cedf93f03c2a0a32e04f0a33705"
 SRC_URI[glibc-nfs.md5sum] = "5ae500b9d0b6b72cb875bc04944b9445"
 SRC_URI[glibc-nfs.sha256sum] = "2677cfedf626f3f5a8f6e507aed5bb8f79a7453b589d684dbbc086e755170d83"
+
 inherit autotools pkgconfig
 
 do_configure_prepend () {
