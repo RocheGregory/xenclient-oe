@@ -7,6 +7,8 @@ PV = "0+git${SRCPV}"
 SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/xclibs.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH}"
 
+CFLAGS_append = " -Wno-unused"
+
 S = "${WORKDIR}/git/xclogging"
 
 inherit autotools
