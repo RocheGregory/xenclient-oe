@@ -59,7 +59,7 @@ python __anonymous() {
 }
 
 do_configure_prepend() {
-	sed -i s:OPT_GNUTLS/bin:OPT_GNUTLS:g configure.ac
+	sed -i s:OPT_GNUTLS/bin:OPT_GNUTLS:g ${S}/configure.ac
 }
 
 #do_stage () {
