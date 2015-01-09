@@ -30,7 +30,7 @@ do_configure_prepend() {
         for file in ${STAGING_LIBDIR}/ghc-local/*.conf
         do
             if [ -e "$file" ]; then
-                    cat "$file"| sed -e "s|/usr/lib|${STAGING_LIBDIR}|" -e "s|/usr/include|${STAGING_INCDIR}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
+                    cat "$file"| sed -e "s|: */usr/lib|: ${STAGING_LIBDIR}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
             fi
         done
     fi
