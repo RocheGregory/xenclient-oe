@@ -11,7 +11,10 @@ SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/input.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
 	   file://input-daemon.initscript \
 "
+
 EXTRA_OECONF += "--with-idldir=${STAGING_IDLDIR}"
+
+CFLAGS_append += " -Wno-unused-parameter -Wno-deprecated-declarations "
 
 S = "${WORKDIR}/git"
 
