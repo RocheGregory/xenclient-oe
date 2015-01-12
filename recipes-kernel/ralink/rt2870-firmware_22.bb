@@ -11,12 +11,18 @@ S = "${WORKDIR}/RT2870_Firmware_V22"
 inherit module-base
 
 do_install() {
-    install -d ${D}/lib/firmware/${KERNEL_VERSION}/rt2870/
+    # Create the destination
+    install -d ${D}/lib/firmware/rt2870/
+
+    # Walk all files in the build dir
     for a in ${WORKDIR}/RT2870_Firmware_V22/*; do
-        install -m 0644 $a ${D}/lib/firmware/${KERNEL_VERSION}/rt2870/
+        # Only run install on a file, ignore directories
+        if [ -f $a ]; then
+            install -m 0644 $a ${D}/lib/firmware/rt2870/
+        fi
     done
 }
 
-FILES_${PN} = "/lib/firmware/${KERNEL_VERSION}/rt2870/"
+FILES_${PN} = "/lib/firmware/rt2870/"
 
 MACHINE_KERNEL_PR_append = "a"
