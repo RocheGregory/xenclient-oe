@@ -1,0 +1,19 @@
+diff --git a/rules/shell-wrapper.mk b/rules/shell-wrapper.mk
+index d2ff84d..6c29f1d 100644
+--- a/rules/shell-wrapper.mk
++++ b/rules/shell-wrapper.mk
+@@ -72,7 +72,6 @@ install_$1_$2_wrapper:
+	echo 'datadir="$$(datadir)"'                             >> "$$(WRAPPER)"
+	echo 'bindir="$$(bindir)"'                               >> "$$(WRAPPER)"
+	echo 'topdir="$$(topdir)"'                               >> "$$(WRAPPER)"
+-	echo 'pgmgcc="$$(WhatGccIsCalled)"'                      >> "$$(WRAPPER)"
+	$$($1_$2_SHELL_WRAPPER_EXTRA)
+	$$($1_$2_INSTALL_SHELL_WRAPPER_EXTRA)
+	cat $$($1_$2_SHELL_WRAPPER_NAME)                         >> "$$(WRAPPER)"
+diff --git a/ghc/ghc.wrapper b/ghc/ghc.wrapper
+index db3ebb0..083a66d 100644
+--- a/ghc/ghc.wrapper
++++ b/ghc/ghc.wrapper
+@@ -1 +1 @@
+-exec "$executablename" -B"$topdir" -pgmc "$pgmgcc" ${1+"$@"}
++exec "$executablename" -B"$topdir" ${1+"$@"}
