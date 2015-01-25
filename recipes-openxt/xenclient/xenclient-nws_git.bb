@@ -24,8 +24,9 @@ INITSCRIPT_PARAMS_${PN} = "defaults 29 15"
 FILES_${PN} += "/usr/bin/network-slave"
 
 # HACK: set explicit pthread usage as  cabal is not detecting this properly
-LDFLAGS += "-pthread"
-CFLAGS += "-pthread"
+LDFLAGS_append += "-pthread"
+LDFLAGS_prepend =+ "-L${STAGING_DIR_TARGET}"
+CFLAGS_append += "-pthread"
 
 inherit xenclient
 
