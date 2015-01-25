@@ -1,4 +1,4 @@
-inherit findlib
+inherit findlib pkgconfig
 SRC_URI[md5sum] = "b769af9141a5c073056ed46ef76ba5be"
 SRC_URI[sha256sum] = "7c793987668e4236c63857469d2abe4a460e0b0954aa7d3262c6d9bb3c24bfdd"
 DESCRIPTION = "OCaml DBUS bindings"
@@ -26,7 +26,7 @@ do_compile() {
 	oe_runmake \
 		OCAMLC="ocamlc -cc '${CC}'" \
 		OCAMLOPT="ocamlopt -cc '${CC}'" \
-		OCAMLMKLIB="ocamlmklib -L'${STAGING_DIR_TARGET}/lib' -L'${STAGING_DIR_TARGET}/usr/lib'"
+		OCAMLMKLIB="ocamlmklib -verbose -L'${STAGING_DIR_TARGET}/lib' -L'${STAGING_DIR_TARGET}/usr/lib'"
 
 }
 
