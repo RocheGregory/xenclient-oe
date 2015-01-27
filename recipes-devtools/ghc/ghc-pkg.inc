@@ -1,7 +1,7 @@
 ASNEEDED_pn-${PN} = ""
 DEPENDS  = "ghc-native"
 RDEPENDS_${PN} = "ghc-runtime"
-RDEPENDS_${PN}_class-native = "ghc-native"
+#RDEPENDS_${PN}_class-native = "ghc-native"
 GHC_VERSION = "6.12.1"
 GHC_CACHE_FILE = "${STAGING_LIBDIR_NATIVE}/ghc-${GHC_VERSION}/package.conf.d/package.cache"
 GHC_CACHE_FILE_BACKUP = "${STAGING_DIR}/package.cache.backup"
@@ -31,7 +31,6 @@ do_configure_prepend_class-target() {
         for file in ${STAGING_LIBDIR}/ghc-local/*.conf
         do
             if [ -e "$file" ]; then
-                    #cat "$file"| sed -e "s|: */usr/lib|: ${STAGING_LIBDIR}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
                     cat "$file"| sed -e "s| /usr/lib|${STAGING_LIBDIR}|" -e "s| /usr/include|${STAGING_INCDIR}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
             fi
         done
@@ -67,7 +66,6 @@ do_configure_prepend_class-native() {
         for file in ${STAGING_LIBDIR_NATIVE}/ghc-local/*.conf
         do
             if [ -e "$file" ]; then
-                    #cat "$file"| sed -e "s|: */usr/lib|: ${STAGING_LIBDIR_NATIVE}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
                     cat "$file"| sed -e "s| /usr/lib|${STAGING_LIBDIR_NATIVE}|" -e "s| /usr/include|${STAGING_INCDIR_NATIVE}|"| ghc-pkg --force -f "${LOCAL_GHC_PACKAGE_DATABASE}" update -
             fi
         done
