@@ -4,7 +4,6 @@ include xenclient-image-common.inc
 IMAGE_FEATURES += "package-management"
 
 COMPATIBLE_MACHINE = "(xenclient-dom0)"
-IMAGE_INITSCRIPTS = "xenclient-dom0-initscripts"
 
 IMAGE_FSTYPES = "xc.ext3.gz"
 
@@ -22,7 +21,7 @@ export STAGING_KERNEL_DIR
 DEPENDS = "packagegroup-base packagegroup-xenclient-dom0"
 IMAGE_INSTALL = "\
     ${ROOTFS_PKGMANAGE} \
-    ${IMAGE_INITSCRIPTS} \
+    initscripts \
     modules \
     packagegroup-core-boot \
     packagegroup-base \
@@ -52,7 +51,6 @@ post_rootfs_shell_commands() {
 	ln -s ../var/volatile/etc/asound ${IMAGE_ROOTFS}/etc/asound;
 
 	rm ${IMAGE_ROOTFS}/etc/hosts; ln -s /var/run/hosts ${IMAGE_ROOTFS}/etc/hosts;
-
 	ln -s /var/volatile/etc/resolv.conf ${IMAGE_ROOTFS}/etc/resolv.conf;
 
 	echo 'kernel.printk_ratelimit = 0' >> ${IMAGE_ROOTFS}/etc/sysctl.conf;
@@ -75,7 +73,7 @@ post_rootfs_shell_commands() {
 	mkdir -p ${IMAGE_ROOTFS}/boot/system ;
 
 	# Remove unwanted packages specified above
-	opkg-cl ${IPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
+	opkg-cl -f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} ${OPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
 
 	# Remove network modules except netfront
 	for x in `find ${IMAGE_ROOTFS}/lib/modules -name *.ko | grep drivers/net | grep -v xen-netfront`; do
@@ -87,16 +85,45 @@ post_rootfs_shell_commands() {
 	echo 'kernel.core_pattern = /var/cores/%e-%t.%p.core' >> ${IMAGE_ROOTFS}/etc/sysctl.conf ;
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
-
 ### Stubdomain stuff - temporary
-STUBDOMAIN_DEPLOY_DIR_IMAGE = "${DEPLOY_DIR_IMAGE}"
+STUBDOMAIN_DEPLOY_DIR_IMAGE = "${DEPLOY_DIR}/images/xenclient-stubdomain"
 STUBDOMAIN_IMAGE = "${STUBDOMAIN_DEPLOY_DIR_IMAGE}/xenclient-stubdomain-initramfs-image-xenclient-stubdomain.cpio.gz"
-STUBDOMAIN_KERNEL = "${STUBDOMAIN_DEPLOY_DIR_IMAGE}/vmlinuz-xenclient-stubdomain.bin"
-ROOTFS_POSTPROCESS_COMMAND += "mkdir -p ${IMAGE_ROOTFS}/usr/lib/xen/boot ;"
-ROOTFS_POSTPROCESS_COMMAND += "cat ${STUBDOMAIN_IMAGE} > ${IMAGE_ROOTFS}/usr/lib/xen/boot/stubdomain-initramfs ;" 
-ROOTFS_POSTPROCESS_COMMAND += "cat ${STUBDOMAIN_KERNEL} > ${IMAGE_ROOTFS}/usr/lib/xen/boot/stubdomain-bzImage ;" 
-### End of stubdomain stuff
+STUBDOMAIN_KERNEL = "${STUBDOMAIN_DEPLOY_DIR_IMAGE}/bzImage-xenclient-stubdomain.bin"
+process_tmp_stubdomain_items() {
+	mkdir -p ${IMAGE_ROOTFS}/usr/lib/xen/boot ;
+	cat ${STUBDOMAIN_IMAGE} > ${IMAGE_ROOTFS}/usr/lib/xen/boot/stubdomain-initramfs ;
+	cat ${STUBDOMAIN_KERNEL} > ${IMAGE_ROOTFS}/usr/lib/xen/boot/stubdomain-bzImage ; 
+}
+
+# Get rid of unneeded initscripts
+remove_initscripts() {
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/hostname.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/hostname.sh
+        update-rc.d -r ${IMAGE_ROOTFS} hostname.sh remove
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/rmnologin.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/rmnologin.sh
+        update-rc.d -r ${IMAGE_ROOTFS} rmnologin.sh remove
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/finish.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/finish.sh
+        update-rc.d -r ${IMAGE_ROOTFS} finish.sh remove
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/mount-special ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/mount-special
+        update-rc.d -r ${IMAGE_ROOTFS} mount-special remove
+    fi
+}
+
+# Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+link_root_dir() {
+    ln -sf /home/root ${IMAGE_ROOTFS}/root
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; link_root_dir; process_tmp_stubdomain_items; "
 
 inherit selinux-image
 #inherit validate-package-versions
