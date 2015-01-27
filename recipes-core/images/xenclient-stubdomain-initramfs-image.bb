@@ -21,13 +21,18 @@ PACKAGE_INSTALL_NO_DEPS = "1"
 PACKAGE_REMOVE = "kernel-image-* update-modules udev sysvinit opkg-cl"
 
 post_rootfs_shell_commands() {
-	opkg-cl ${IPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
+	opkg-cl -f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} ${OPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
 	rm -f ${IMAGE_ROOTFS}/sbin/udhcpc;
 	rm -f ${IMAGE_ROOTFS}/sbin/ldconfig;
 	rm -rvf ${IMAGE_ROOTFS}/usr/lib/opkg;
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
+support_vmlinuz() {
+	# Make a vmlinuz link for items that explicitly reference it
+	ln -sf bzImage ${IMAGE_ROOTFS}/boot/vmlinuz
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; support_vmlinux; "
 
 inherit image
 #inherit validate-package-versions
