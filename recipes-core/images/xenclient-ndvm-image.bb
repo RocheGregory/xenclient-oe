@@ -69,10 +69,32 @@ post_rootfs_shell_commands() {
 	# Move resolv.conf to /var/volatile/etc, as rootfs is readonly
 	rm -f ${IMAGE_ROOTFS}/etc/resolv.conf; ln -s /var/volatile/etc/resolv.conf ${IMAGE_ROOTFS}/etc/resolv.conf;
 
-	opkg-cl ${IPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
+	opkg-cl -f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} ${OPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
+remove_initscripts() {
+    # Remove unneeded initscripts
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/urandom ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/urandom
+        update-rc.d -r ${IMAGE_ROOTFS} urandom remove
+    fi
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/sshd ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/sshd
+        update-rc.d -r ${IMAGE_ROOTFS} sshd remove
+    fi
+}
+
+support_vmlinuz() {
+	# Make a vmlinuz link for items that explicitly reference it
+	ln -sf bzImage ${IMAGE_ROOTFS}/boot/vmlinuz
+}
+
+# Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+link_root_dir() {
+    ln -sf /home/root ${IMAGE_ROOTFS}/root
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; support_vmlinuz; link_root_dir; "
 
 inherit selinux-image
 #inherit validate-package-versions
