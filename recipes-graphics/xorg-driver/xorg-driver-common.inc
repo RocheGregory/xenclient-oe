@@ -21,9 +21,9 @@ inherit autotools pkgconfig
 # AC_CHECK_FILE doesn't work when cross compiling, so we create a replacement
 # macro that simply assumes the test succeeds. 
 do_configure_prepend () {
-    echo 'AC_DEFUN(CC_AC_CHECK_FILE, $2)' > configure.ac.new
-    sed 's/AC_CHECK_FILE/CC_AC_CHECK_FILE/g' configure.ac >> configure.ac.new
-    mv configure.ac.new configure.ac
+    echo 'AC_DEFUN(CC_AC_CHECK_FILE, $2)' > ${S}/configure.ac.new
+    sed 's/AC_CHECK_FILE/CC_AC_CHECK_FILE/g' ${S}/configure.ac >> ${S}/configure.ac.new
+    mv ${S}/configure.ac.new ${S}/configure.ac
 }
 
 # FIXME: We don't want to include the libtool archives (*.la) from modules

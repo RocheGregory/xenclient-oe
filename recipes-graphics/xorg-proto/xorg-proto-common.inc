@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b9f79c119df756aeffcb89ec96716a9e"
 
 DEPENDS = "util-macros"
 
-XORG_PN = "${PN}"
+XORG_PN = "${BPN}"
 
 ALLOW_EMPTY_${PN} = "1"
 

@@ -43,11 +43,6 @@ IMAGE_INSTALL = "\
     network-manager-applet-locale-fr \
     network-manager-applet-locale-ja \
     network-manager-applet-locale-zh-cn \
-    gtk+-locale-de \
-    gtk+-locale-es \
-    gtk+-locale-fr \
-    gtk+-locale-ja \
-    gtk+-locale-zh-cn \
     gnome-keyring-locale-de \
     gnome-keyring-locale-es \
     gnome-keyring-locale-fr \
@@ -88,6 +83,14 @@ IMAGE_INSTALL = "\
     matchbox-keyboard \
     matchbox-keyboard-im \
     ${ANGSTROM_EXTRA_INSTALL}"
+
+# these cause a python dictionary changed size during iteration error
+#    gtk+-locale-de \
+#    gtk+-locale-es \
+#    gtk+-locale-fr \
+#    gtk+-locale-ja \
+#    gtk+-locale-zh-cn \
+#
 
 # OE upgrade - temporarly disabled:
 
@@ -140,13 +143,47 @@ post_rootfs_shell_commands() {
 
 	echo '1.0.0.0 dom0' >> ${IMAGE_ROOTFS}/etc/hosts;
 
-	opkg-cl ${IPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
+	opkg-cl -f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} ${OPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE}
 
 	# readonly rootfs prevents sshd from creating dirs
 	mkdir ${IMAGE_ROOTFS}/root/.ssh;
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
+remove_initscripts() {
+    # Remove unneeded initscripts
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/finish.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/finish.sh
+        update-rc.d -r ${IMAGE_ROOTFS} finish.sh remove
+    fi
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/hostname.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/hostname.sh
+        update-rc.d -r ${IMAGE_ROOTFS} hostname.sh remove
+    fi
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/rmnologin.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/rmnologin.sh
+        update-rc.d -r ${IMAGE_ROOTFS} rmnologin.sh remove
+    fi
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/sshd ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/sshd
+        update-rc.d -r ${IMAGE_ROOTFS} sshd remove
+    fi
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/urandom ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/urandom
+        update-rc.d -r ${IMAGE_ROOTFS} urandom remove
+    fi
+}
+
+support_vmlinuz() {
+	# Make a vmlinuz link for items that explicitly reference it
+	ln -sf bzImage ${IMAGE_ROOTFS}/boot/vmlinuz
+}
+
+# Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+link_root_dir() {
+    ln -sf /home/root ${IMAGE_ROOTFS}/root
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; support_vmlinuz; "
 
 inherit image
 #inherit validate-package-versions
