@@ -57,7 +57,7 @@ test -x ${bindir}/gtk-update-icon-cache && gtk-update-icon-cache  -q ${datadir}/
 }
 
 PACKAGES_DYNAMIC += "gdk-pixbuf-loader-*"
-PACKAGES_DYNAMIC_virtclass-native = ""
+PACKAGES_DYNAMIC_class-native = ""
 
 python populate_packages_prepend () {
     postinst_pixbufloader = d.getVar("postinst_pixbufloader", True)
@@ -67,9 +67,9 @@ python populate_packages_prepend () {
     do_split_packages(d, loaders_root, '^libpixbufloader-(.*)\.so$', 'gdk-pixbuf-loader-%s', 'GDK pixbuf loader for %s', postinst_pixbufloader)
 }
 
-do_install_append_virtclass-native() {
+do_install_append_class-native() {
 #Use wrapper script rather than binary as required libtool library is not installed now
-	GDK_PIXBUF_MODULEDIR=${D}${libdir}/gdk-pixbuf-2.0/${LIBV}/loaders ${S}/gdk-pixbuf/gdk-pixbuf-query-loaders > ${D}${libdir}/gdk-pixbuf-2.0/${LIBV}/loaders.cache
+	GDK_PIXBUF_MODULEDIR=${D}${libdir}/gdk-pixbuf-2.0/${LIBV}/loaders ${B}/gdk-pixbuf/gdk-pixbuf-query-loaders > ${D}${libdir}/gdk-pixbuf-2.0/${LIBV}/loaders.cache
 	sed -i -e 's#${D}##g' ${D}${libdir}/gdk-pixbuf-2.0/${LIBV}/loaders.cache
 	find ${D}${libdir} -name "libpixbufloader-*.la" -exec rm \{\} \;
 
