@@ -3,7 +3,6 @@
 include xenclient-image-common.inc
 
 COMPATIBLE_MACHINE = "(xenclient-dom0)"
-IMAGE_INITSCRIPTS = "xenclient-dom0-initscripts"
 
 IMAGE_FSTYPES = "cpio.bz2"
 
@@ -21,7 +20,7 @@ export STAGING_KERNEL_DIR
 DEPENDS = "packagegroup-base packagegroup-xenclient-dom0"
 IMAGE_INSTALL = "\
     ${ROOTFS_PKGMANAGE} \
-    ${IMAGE_INITSCRIPTS} \
+    initscripts \
     modules \
     packagegroup-base \
     packagegroup-core-boot \
@@ -60,13 +59,41 @@ post_rootfs_shell_commands() {
 	mkdir -p ${IMAGE_ROOTFS}/boot/system ;
 
 	# Remove unwanted packages specified above
-	opkg-cl ${IPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
+	opkg-cl -f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} ${OPKG_ARGS} -force-depends remove ${PACKAGE_REMOVE};
 
 	# Write coredumps in /var/cores
 	echo 'kernel.core_pattern = /var/cores/%e-%t.%p.core' >> ${IMAGE_ROOTFS}/etc/sysctl.conf ;
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
+# Get rid of unneeded initscripts
+remove_initscripts() {
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/hostname.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/hostname.sh
+        update-rc.d -r ${IMAGE_ROOTFS} hostname.sh remove
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/rmnologin.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/rmnologin.sh
+        update-rc.d -r ${IMAGE_ROOTFS} rmnologin.sh remove
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/finish.sh ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/finish.sh
+        update-rc.d -r ${IMAGE_ROOTFS} finish.sh remove
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/mount-special ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/init.d/mount-special
+        update-rc.d -r ${IMAGE_ROOTFS} mount-special remove
+    fi
+}
+
+# Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+link_root_dir() {
+    ln -sf /home/root ${IMAGE_ROOTFS}/root
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; link_root_dir; "
 
 inherit image
 #inherit validate-package-versions
