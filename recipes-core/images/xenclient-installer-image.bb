@@ -120,7 +120,7 @@ do_post_rootfs_items() {
 	cp -f ${IMAGE_ROOTFS}/boot/5th_gen_i5_i7_SINIT_79.BIN ${DEPLOY_DIR_IMAGE}/bdw.acm
 }
 
-addtask do_post_rootfs_items after do_rootfs
+addtask post_rootfs_items after do_rootfs before do_build
 
 inherit image
 inherit xenclient-image-src-info
