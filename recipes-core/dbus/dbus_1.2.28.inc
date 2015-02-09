@@ -74,6 +74,7 @@ ${bindir}/dbus-send \
 ${bindir}/dbus-monitor \
 ${libexecdir}/dbus* \
 ${sysconfdir} \
+${localstatedir} \
 ${datadir}/dbus-1/services \
 ${datadir}/dbus-1/system-services \
 "
@@ -81,11 +82,11 @@ FILES_${PN}-lib = "${libdir}/lib*.so.*"
 FILES_${PN}-x11 = "\
 ${bindir}/dbus-launch \
 "
-FILES_${PN}-dev += "${libdir}/dbus-1.0/include ${bindir}/dbus-glib-tool ${libdir}/"
+FILES_${PN}-dev += "${libdir}/dbus-1.0/include ${bindir}/dbus-glib-tool"
 
 pkg_postinst_${PN}() {
 #!/bin/sh
-chmod u+s $D/usr/libexec/dbus-daemon-launch-helper
+chmod u+s $D${libexecdir}/dbus-daemon-launch-helper
 }
 
 CONFFILES_${PN} = "${sysconfdir}/dbus-1/system.conf ${sysconfdir}/dbus-1/session.conf"
