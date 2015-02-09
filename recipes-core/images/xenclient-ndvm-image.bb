@@ -97,11 +97,12 @@ support_vmlinuz() {
 }
 
 # Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+# Will be needed when we follow upstream base-files
 link_root_dir() {
     ln -sf /home/root ${IMAGE_ROOTFS}/root
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; support_vmlinuz; link_root_dir; "
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; support_vmlinuz; "
 
 inherit selinux-image
 #inherit validate-package-versions
