@@ -119,11 +119,12 @@ remove_initscripts() {
 }
 
 # Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+# Will be needed when we follow upstream base-files
 link_root_dir() {
     ln -sf /home/root ${IMAGE_ROOTFS}/root
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; link_root_dir; process_tmp_stubdomain_items; "
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; process_tmp_stubdomain_items; "
 
 inherit selinux-image
 #inherit validate-package-versions
