@@ -179,6 +179,7 @@ support_vmlinuz() {
 }
 
 # Symlink /root to /home/root until nothing references /root anymore, e.g. SELinux file_contexts
+# Will be needed when we follow upstream base-files
 link_root_dir() {
     ln -sf /home/root ${IMAGE_ROOTFS}/root
 }
