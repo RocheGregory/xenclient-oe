@@ -1,6 +1,6 @@
-PRINC = "1"
+PR = "openxt-01"
 
-FILESEXTRAPATHS := "${THISDIR}/${PN}"
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += "file://remove_mtrr.patch"
 

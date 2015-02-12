@@ -1,4 +1,4 @@
-PRINC = "1"
+PR = "openxt-01"
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
 DEPENDS += "libbudgetvhd"
 SRC_URI += "file://vhd.patch"
