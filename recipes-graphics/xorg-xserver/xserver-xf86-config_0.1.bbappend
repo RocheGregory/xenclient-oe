@@ -1,2 +1,2 @@
-PRINC = "1"
-FILESEXTRAPATHS := "${THISDIR}/${PN}"
+PR = "openxt-01"
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"

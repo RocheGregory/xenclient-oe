@@ -1,4 +1,4 @@
-PRINC = "1"
+PR = "openxt-01"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 EXTRA_OEMAKE += "-j 1"
  

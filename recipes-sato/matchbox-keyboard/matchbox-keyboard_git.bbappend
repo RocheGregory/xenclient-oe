@@ -1,4 +1,4 @@
-PRINC = "1"
+PR = "openxt-01"
 inherit qemu
 DEPENDS += "qemu-native"
 pkg_postinst_matchbox-keyboard-im () {

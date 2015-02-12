@@ -1,7 +1,7 @@
 inherit xenclient
 
 # For deb-xenstore-client-tools and deb-libxenstore to pickup patches
-FILESEXTRAPATHS := "${THISDIR}/files"
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 PV = "${XEN_VERSION}"
 
