@@ -11,6 +11,5 @@ CFLAGS_append = " -Wno-unused"
 
 S = "${WORKDIR}/git/xclogging"
 
-inherit autotools
-inherit pkgconfig
-inherit xenclient
+inherit autotools-brokensep pkgconfig xenclient
+
