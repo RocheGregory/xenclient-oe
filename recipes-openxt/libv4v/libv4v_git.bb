@@ -11,11 +11,7 @@ SRC_URI = "git://${OPENXT_GIT_MIRROR}/v4v.git;protocol=${OPENXT_GIT_PROTOCOL};br
 
 S = "${WORKDIR}/git/libv4v"
 
-inherit autotools
-inherit pkgconfig
-inherit lib_package
-inherit xenclient
-
+inherit autotools-brokensep pkgconfig lib_package xenclient
 
 do_install_append(){
     install -d ${D}/etc
