@@ -32,7 +32,7 @@ BBCLASSEXTEND = "native"
 
 #EXTRA_OECONF_append = " --bindir ${STAGING_BINDIR} --libdir ${STAGING_LIBDIR} --datadir ${STAGING_DATADIR} --enable-shared "
 
-inherit autotools pkgconfig
+inherit autotools-brokensep pkgconfig
 
 FILES_${PN} = "${libdir}/*.so"
 FILES_${PN}-dev = ""
@@ -45,7 +45,7 @@ do_configure() {
 }
 
 do_pre_configure() {
-	cp `which pwd` utils/ghc-pwd/ghc-pwd
+	cp `which pwd` ${S}/utils/ghc-pwd/ghc-pwd
 	export CPP=`which cpp`
 }
 
