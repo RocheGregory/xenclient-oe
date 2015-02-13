@@ -1,4 +1,3 @@
-inherit findlib
 DESCRIPTION = "XenClient toolstack"
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM = "file://COPYING;md5=321bf41f280cf805086dd5a720b37785"
@@ -8,7 +7,7 @@ RDEPENDS_${PN}_xenclient-ndvm += " db-tools"
 
 DEPENDS_append_xenclient-nilfvm += " ${@deb_bootstrap_deps(d)} "
 
-inherit xenclient
+inherit autotools-brokensep findlib xenclient
 inherit ${@"xenclient-simple-deb"if(d.getVar("MACHINE",1)=="xenclient-nilfvm")else("null")}
 
 PACKAGES += "${PN}-libs-dbg ${PN}-libs-staticdev ${PN}-libs-dev ${PN}-libs"
