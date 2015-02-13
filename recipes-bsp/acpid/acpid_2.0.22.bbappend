@@ -1,5 +1,7 @@
-PRINC = "1"
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}"
+PR = "openxt-01"
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
 SRC_URI += " \
                    file://powerbtn \
                    file://ac \
