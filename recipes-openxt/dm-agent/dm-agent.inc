@@ -8,10 +8,18 @@ PV = "0+git${SRCPV}"
 FILESEXTRAPATHS_prepend := "${THISDIR}/dm-agent:"
 
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/dm-agent.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
-           file://fix-sscanf-call.patch"
+            file://fix-sscanf-call.patch \
+            file://dm-agent.initscript \
+            file://fix-ac-init.patch \
+            file://bsd_sources-is-deprecated.patch \
+           "
+
 S = "${WORKDIR}/git"
 
 EXTRA_OEMAKE += "LIBDIR=${STAGING_LIBDIR}"
 
-inherit autotools
-inherit xenclient
+inherit autotools pkgconfig xenclient
+
+do_configure_prepend(){
+     export VERSION="${VERSION}"
+}
