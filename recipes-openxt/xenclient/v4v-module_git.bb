@@ -28,11 +28,11 @@ SRC_URI = "git://${OPENXT_GIT_MIRROR}/v4v.git;protocol=${OPENXT_GIT_PROTOCOL};br
 S = "${WORKDIR}/git/v4v"
 
 do_install_headers() {
-        install -m 0755 -d ${D}/usr/include/xen
+        #install -m 0755 -d ${D}/usr/include/xen
         install -m 0755 -d ${D}/usr/include/linux
         install -m 0755 -d ${STAGING_KERNEL_DIR}/include/xen
         install -m 0755 -d ${STAGING_KERNEL_DIR}/include/linux
-	install -m 644 include/xen/v4v.h ${D}/usr/include/xen/v4v.h
+	#install -m 644 include/xen/v4v.h ${D}/usr/include/xen/v4v.h
 	install -m 644 include/xen/v4v.h ${STAGING_KERNEL_DIR}/include/xen/v4v.h
 	install -m 644 linux/v4v_dev.h ${D}/usr/include/linux/v4v_dev.h
 	install -m 644 linux/v4v_dev.h ${STAGING_KERNEL_DIR}/include/linux/v4v_dev.h
