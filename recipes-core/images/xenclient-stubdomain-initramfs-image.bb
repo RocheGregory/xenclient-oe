@@ -32,7 +32,7 @@ support_vmlinuz() {
 	ln -sf bzImage ${IMAGE_ROOTFS}/boot/vmlinuz
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; support_vmlinux; "
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; support_vmlinuz; "
 
 inherit image
 #inherit validate-package-versions
