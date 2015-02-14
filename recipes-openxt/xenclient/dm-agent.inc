@@ -5,7 +5,10 @@ DEPENDS = "xen xen-tools libv4v libdmbus dbus libevent libxcxenstore"
 
 PV = "0+git${SRCPV}"
 
-SRC_URI = "git://${OPENXT_GIT_MIRROR}/dm-agent.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH}"
+FILESEXTRAPATHS_prepend := "${THISDIR}/dm-agent:"
+
+SRC_URI = "git://${OPENXT_GIT_MIRROR}/dm-agent.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
+           file://fix-sscanf-call.patch"
 S = "${WORKDIR}/git"
 
 EXTRA_OEMAKE += "LIBDIR=${STAGING_LIBDIR}"
