@@ -124,7 +124,11 @@ link_root_dir() {
     ln -sf /home/root ${IMAGE_ROOTFS}/root
 }
 
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; process_tmp_stubdomain_items; "
+force_iproute2_bin() {
+    ln -sf /sbin/ip.iproute2 ${IMAGE_ROOTFS}/bin/ip
+}
+
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; remove_initscripts; process_tmp_stubdomain_items; force_iproute2_bin; "
 
 inherit selinux-image
 #inherit validate-package-versions
