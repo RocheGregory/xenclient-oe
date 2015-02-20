@@ -27,12 +27,7 @@ post_rootfs_shell_commands() {
 	rm -rvf ${IMAGE_ROOTFS}/usr/lib/opkg;
 }
 
-support_vmlinuz() {
-	# Make a vmlinuz link for items that explicitly reference it
-	ln -sf bzImage ${IMAGE_ROOTFS}/boot/vmlinuz
-}
-
-ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; support_vmlinuz; "
+ROOTFS_POSTPROCESS_COMMAND += " post_rootfs_shell_commands; "
 
 inherit image
 #inherit validate-package-versions
