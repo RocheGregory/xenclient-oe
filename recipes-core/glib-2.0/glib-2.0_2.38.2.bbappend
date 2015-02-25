@@ -1,4 +1,4 @@
-PRINC = "2"
+PR = "openxt-01"
 
 EXTRA_OECONF += " --enable-static "
 
