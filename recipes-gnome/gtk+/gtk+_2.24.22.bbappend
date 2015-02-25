@@ -1,6 +1,6 @@
-PRINC = "1"
-EXTRA_OECONF += "--enable-xkb"
-PACKAGES_DYNAMIC += "gtk+-locale-*"
+PR = "openxt-01"
+
+PACKAGES_DYNAMIC += "^gtk+-locale-*"
 
 BBCLASSEXTEND = "native"
 RRECOMMENDS_${PN}_class-native = ""
