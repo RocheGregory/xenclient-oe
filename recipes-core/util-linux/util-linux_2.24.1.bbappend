@@ -1,5 +1,9 @@
 PR = "openxt-01"
 
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
+
+SRC_URI += "file://fix-selinux-compilation.patch "
+
 # make ionice a separate package
 PACKAGES =+ "util-linux-ionice"
 FILES_util-linux-ionice = "${bindir}/ionice"
