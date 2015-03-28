@@ -52,6 +52,7 @@ RDEPENDS_${PN} = " \
     pciutils-ids \
     acms \
     read-edid \
+    parse-edid \
     openssl \
     ntpdate \
     dd-buffered \
