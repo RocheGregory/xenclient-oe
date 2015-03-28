@@ -32,6 +32,7 @@ RDEPENDS_${PN} = " \
     openssl \
     xenclient-toolstack \
     read-edid \
+    parse-edid \
     pciutils-ids \
     dosfstools \
     syslinux \
