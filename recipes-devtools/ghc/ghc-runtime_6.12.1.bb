@@ -18,6 +18,7 @@ SRC_URI = " \
 	file://bfd-error.patch \
 	file://ghc6-fix-linking-with-newer-binutils.patch \
 	file://fix-linker.patch \
+	file://fix-compile-with-gcc-4.9.patch \
 	"
 
 SRC_URI[md5sum] = "3a2b23f29013605f721ebdfc29de9c92"
