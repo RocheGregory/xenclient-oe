@@ -14,6 +14,7 @@ DEPENDS = "xen-tools alsa-lib pciutils libpng blktap libxenacpi libv4v openssl z
 #            file://0014-audio-alsa-stub.patch;striplevel=1 \
 #            file://0026-openxtaudio.patch;striplevel=1 \
 #            file://0007-pci-reserve-igd-slot.patch;striplevel=1 \
+#
 
 # Leave this in it's own definition so that it can be replaced with a local
 # tarball (the QEMU download speed is terrible). If this is combined with the
@@ -62,6 +63,8 @@ INSANE_SKIP_${PN}-extra-roms = "arch"
 
 PACKAGES += "${PN}-extra-keymaps ${PN}-extra-roms"
 
+CFLAGS_append = " -Wno-unused-parameter -Wno-unused-local-typedefs"
+
 do_configure(){
     ${S}/configure ${EXTRA_OECONF} --enable-xen \
                 --target-list=i386-softmmu \
@@ -98,7 +101,7 @@ do_compile(){
 
 do_install(){
     # QEMU's build system conflicts with STRIP defined in OE.
-    DESTDIR=${D} oe_runmake STRIP='' install
+    oe_runmake DESTDIR=${D} STRIP='' install
 }
 
 INC_PR = "r11"
