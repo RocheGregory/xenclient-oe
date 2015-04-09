@@ -18,4 +18,3 @@ do_install_append() {
 	install -m 0755 -d ${D}/etc/dbus-1
 	install -m 0644 ${WORKDIR}/system.conf ${D}/etc/dbus-1
 }
-
