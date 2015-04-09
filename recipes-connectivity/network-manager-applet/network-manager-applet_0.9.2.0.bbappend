@@ -35,6 +35,11 @@ SRC_URI += " \
            file://xc-menus.patch;patch=1 \
            file://disable_available_to_all_users_checkbox.patch;patch=1 \
            file://default-certs-dir.patch;patch=1 \
+           file://nm-signal-00.png \
+           file://nm-signal-25.png \
+           file://nm-signal-50.png \
+           file://nm-signal-75.png \
+           file://nm-signal-100.png \
 "
 
 EXTRA_OECONF += " \
@@ -72,5 +77,15 @@ do_install_append() {
                         ${WORKDIR}/075_Wired_h32bit_50x50.png \
                         ${WORKDIR}/075_WWan_h32bit_50x50.png \
                         ${D}${datadir}/icons/hicolor/50x50/xenclient
+
+        # The old nm-applet package we used had some bad png files that now make
+        # other components choke.  Pulled these from a newer version. 
+	rm -f ${D}${datadir}/icons/hicolor/22x22/apps/nm-signal-*.png
+        install -m 0644 ${WORKDIR}/nm-signal-00.png \
+                        ${WORKDIR}/nm-signal-25.png \
+                        ${WORKDIR}/nm-signal-50.png \
+                        ${WORKDIR}/nm-signal-75.png \
+                        ${WORKDIR}/nm-signal-100.png \
+                        ${D}${datadir}/icons/hicolor/22x22/apps
 }
 
