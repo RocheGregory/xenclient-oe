@@ -30,7 +30,7 @@ INITSCRIPT_PACKAGES = "${PN}-sshd"
 INITSCRIPT_NAME_${PN}-sshd = "sshd_v4v"
 INITSCRIPT_PARAMS_${PN}-sshd = "defaults 9"
 
-inherit autotools
+inherit autotools-brokensep
 
 # LFS support:
 CFLAGS += "-D__FILE_OFFSET_BITS=64"
