@@ -15,7 +15,7 @@ SRC_URI = "http://rsyslog.com/files/download/rsyslog/rsyslog-${PV}.tar.gz \
 
 S = "${WORKDIR}/${PN}-${PV}"
 
-inherit autotools update-rc.d
+inherit autotools update-rc.d pkgconfig
 
 do_install_append() {
         install -d ${D}/${sysconfdir}/${PN}
