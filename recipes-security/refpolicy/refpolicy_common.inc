@@ -22,7 +22,7 @@ RDEPENDS_${PN} += "selinux-config"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-inherit autotools pythonnative
+inherit autotools-brokensep pythonnative
 
 PARALLEL_MAKE = ""
 
