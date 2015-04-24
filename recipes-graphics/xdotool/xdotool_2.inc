@@ -16,4 +16,4 @@ do_install_prepend() {
   export PREFIX=/usr
 }
 
-inherit autotools
+inherit autotools-brokensep
