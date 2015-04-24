@@ -49,8 +49,7 @@ SRC_URI[sha256sum] = "066297ed77408fb7588889c271a85cf3c259ad55c939315988e6062d77
 
 S = "${WORKDIR}/qemu-${PV}"
 
-inherit xenclient
-inherit autotools
+inherit xenclient autotools-brokensep
 
 # Include a minimal amount of blobs by default.
 FILES_${PN} += "/usr/share/qemu/keymaps/en-us       \
