@@ -63,10 +63,10 @@ index 06031d8..593e1bd 100644
 --- a/src/option.c
 +++ b/src/option.c
 @@ -138,6 +138,7 @@ struct myoption {
- #define LOPT_QUIET_DHCP   326
- #define LOPT_QUIET_DHCP6  327
- #define LOPT_QUIET_RA     328
-+#define LOPT_DNSOUT_IF    329
+ #define LOPT_DNSSEC_CHECK  334
+ #define LOPT_LOCAL_SERVICE 335
+ #define LOPT_DNSSEC_TIME   336
++#define LOPT_DNSOUT_IF    337
  
  
  #ifdef HAVE_GETOPT_LONG
