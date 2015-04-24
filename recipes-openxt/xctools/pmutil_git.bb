@@ -12,6 +12,5 @@ EXTRA_OECONF += "--with-idldir=${STAGING_IDLDIR}"
 
 S = "${WORKDIR}/git/pmutil"
 
-inherit autotools
-inherit xenclient
+inherit autotools xenclient pkgconfig
 

@@ -18,9 +18,7 @@ CFLAGS_append += " -Wno-unused-parameter -Wno-deprecated-declarations "
 
 S = "${WORKDIR}/git/xcpmd"
 
-inherit autotools
-inherit xenclient
-inherit update-rc.d
+inherit autotools xenclient update-rc.d pkgconfig
 
 INITSCRIPT_NAME = "xcpmd"
 INITSCRIPT_PARAMS = "defaults 60"
