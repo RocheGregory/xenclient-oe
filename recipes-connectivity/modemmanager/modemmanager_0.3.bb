@@ -15,7 +15,7 @@ S = "${WORKDIR}/ModemManager-${PV}"
 
 CFLAGS_append += " -Wno-deprecated-declarations "
 
-inherit autotools
+inherit autotools pkgconfig
 
 FILES_${PN} += "${libdir}/ModemManager/*.so \
                 ${libdir}/pppd/*/*.so \
