@@ -9,7 +9,7 @@ S = "${WORKDIR}"
 FILES_${PN} += " /usr/share/xenclient/qemu-dm-wrapper_alt	\
                  /usr/lib/xen/bin/qemu-dm_alt "
 
-inherit autotools
+inherit autotools-brokensep
 
 do_install_append() {
         install -m 755 -d ${D}/usr/share/xenclient/
