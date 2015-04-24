@@ -11,8 +11,7 @@ SRC_URI = "git://${OPENXT_GIT_MIRROR}/bootage.git;protocol=${OPENXT_GIT_PROTOCOL
 
 S = "${WORKDIR}/git"
 
-inherit autotools
-inherit xenclient
+inherit autotools-brokensep xenclient
 
 do_install_append() {
     install -d ${D}/etc
