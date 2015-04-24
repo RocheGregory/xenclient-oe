@@ -29,6 +29,7 @@ do_install_append() {
     install -m 0755 ${WORKDIR}/mdev ${D}${sysconfdir}/init.d/
 
     # Don't let busybox add alternatives for items for which we use the full tools
+    # Need to try doing this via the defconfig file instead
     grep -v '/sbin/ip' ${D}${sysconfdir}/busybox.links.nosuid > ${S}/busybox.links.nosuid.tmp
     install -m 0644 ${S}/busybox.links.nosuid.tmp ${D}${sysconfdir}/busybox.links.nosuid
 
@@ -37,6 +38,11 @@ do_install_append() {
 
     grep -v '/usr/bin/lsusb' ${D}${sysconfdir}/busybox.links.nosuid > ${S}/busybox.links.nosuid.tmp
     install -m 0644 ${S}/busybox.links.nosuid.tmp ${D}${sysconfdir}/busybox.links.nosuid
+
+    grep -v '/usr/sbin/udhcpc' ${D}${sysconfdir}/busybox.links.nosuid > ${S}/busybox.links.nosuid.tmp
+    install -m 0644 ${S}/busybox.links.nosuid.tmp ${D}${sysconfdir}/busybox.links.nosuid
+
+    rm -rf ${D}/usr/share/udhcpc
 
     # SELinux doesn't like busybox links
     #install -d ${D}${base_sbindir}
