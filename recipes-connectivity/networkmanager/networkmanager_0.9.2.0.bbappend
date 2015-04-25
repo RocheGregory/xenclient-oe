@@ -18,6 +18,7 @@ SRC_URI += " \
             file://NetworkManager.conf \
             file://ac-wireless \
             file://01ppp \
+            file://remove-libgcrypt.patch \
 "
 
 EXTRA_OECONF += " \
