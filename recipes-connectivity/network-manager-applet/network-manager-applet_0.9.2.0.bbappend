@@ -47,6 +47,8 @@ EXTRA_OECONF += " \
 "
 PACKAGE_ARCH_xenclient-uivm = "${MACHINE_ARCH}"
 
+CFLAGS_append += " -Wno-deprecated-declarations -Wno-unused-function -Wno-error=declaration-after-statement"
+
 do_install_append() {
         install -d ${D}${datadir}/icons/hicolor/22x22/xenclient
 
