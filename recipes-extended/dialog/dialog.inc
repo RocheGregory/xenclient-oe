@@ -8,15 +8,19 @@ DEPENDS = "ncurses"
 LICENSE = "LGPL-2.1"
 LIC_FILES_CHKSUM = "file://COPYING;md5=a6f89e2100d9b6cdffcea4f398e37343"
 
+# Temporarily avoid freeze patch to get dialog to build
 SRC_URI = "ftp://invisible-island.net/dialog/dialog-${PV}.tgz \
-           file://freeze.patch \
-           file://multibyte-password.patch \
            file://use-pkg-config-for-ncurses-detection.patch"
+
+#SRC_URI = "ftp://invisible-island.net/dialog/dialog-${PV}.tgz \
+#           file://freeze.patch \
+#           file://multibyte-password.patch \
+#           file://use-pkg-config-for-ncurses-detection.patch"
 
 # hardcoded here for use in dialog-static recipe
 S = "${WORKDIR}/dialog-${PV}"
 
-inherit autotools-brokensep
+inherit autotools-brokensep pkgconfig
 
 EXTRA_OECONF = "--with-ncurses \
                 --disable-rpath-hack"
