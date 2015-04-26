@@ -42,5 +42,8 @@ do_compile() {
 do_install() {
         oe_runmake -C tools subdir-install-include
         oe_runmake -C tools subdir-install-firmware
+
+	# Remove files already provided by xen-tools
+	rm -rf ${D}/usr/include
 }
 
