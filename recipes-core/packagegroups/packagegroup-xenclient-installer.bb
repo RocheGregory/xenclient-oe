@@ -16,7 +16,6 @@ RDEPENDS_${PN} = " \
     dialog \
     e2fsprogs \
     e2fsprogs-e2fsck \
-    e2fsprogs-fsck \
     e2fsprogs-mke2fs \
     e2fsprogs-tune2fs \
     eject \

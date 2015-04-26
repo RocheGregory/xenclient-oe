@@ -3,7 +3,7 @@ LICENSE = "GPLv2"
 
 SRC_URI = "http://downloads.sourceforge.net/project/e1000/e1000e%20stable/${PV}/e1000e-${PV}.tar.gz "
 
-DEPENDS = "virtual/kernel"
+#DEPENDS = "virtual/kernel"
 
 S = "${WORKDIR}/e1000e-${PV}/src"
 
@@ -17,4 +17,5 @@ do_install() {
     make -C ${STAGING_KERNEL_DIR} KSRC="${STAGING_KERNEL_DIR}" DEPMOD=echo INSTALL_MOD_PATH="${D}" M="${S}" modules_install
 }
 
-FILES_${PN} = "/lib/modules /etc/modprobe.d"
+FILES_kernel_module-e1000e = "/lib/modules /etc/modprobe.d"
+PROVIDES = "kernel-module-e1000e"
