@@ -9,6 +9,7 @@ PV = "0+git${SRCPV}"
 SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/xc-vusb-daemon.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
            file://xenclient-vusb.initscript \
+           file://automake-foreign.patch \
            "
 
 EXTRA_OECONF += "--with-idldir=${STAGING_IDLDIR}"
@@ -18,9 +19,7 @@ EXTRA_OECONF += "--with-libxenstore=${STAGING_LIBDIR}"
 
 S = "${WORKDIR}/git"
 
-inherit autotools
-inherit xenclient
-inherit update-rc.d
+inherit autotools xenclient update-rc.d pkgconfig
 
 INITSCRIPT_NAME = "xenclient-vusb-daemon"
 INITSCRIPT_PARAMS = "defaults 60"
