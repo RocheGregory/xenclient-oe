@@ -1,0 +1,12 @@
+diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
+index 6c25a2b..17592d7 100644
+--- a/drivers/xen/Kconfig
++++ b/drivers/xen/Kconfig
+@@ -77,7 +77,6 @@ config XEN_DEV_EVTCHN
+ 
+ config XEN_BACKEND
+ 	bool "Backend driver support"
+-	depends on XEN_DOM0
+ 	default y
+ 	help
+ 	  Support for backend device drivers that provide I/O services

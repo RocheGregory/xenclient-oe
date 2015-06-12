@@ -1,0 +1,33 @@
+Index: linux-3.19.8/drivers/net/xen-netfront.c
+===================================================================
+--- linux-3.19.8.orig/drivers/net/xen-netfront.c	2015-06-08 18:58:54.733700620 +0200
++++ linux-3.19.8/drivers/net/xen-netfront.c	2015-06-08 19:04:49.212949987 +0200
+@@ -2031,15 +2031,26 @@
+ 	dev_dbg(&dev->dev, "%s\n", xenbus_strstate(backend_state));
+ 
+ 	switch (backend_state) {
++	case XenbusStateUnknown:
++		/* if the backend vanishes from xenstore, close frontend */
++		if (!xenbus_exists(XBT_NIL, dev->otherend, "") &&
++		    (dev->state != XenbusStateClosed)) {
++			dev_warn(&dev->dev,
++				"backend vanished, closing frontend\n");
++			xenbus_frontend_closed(dev);
++			xennet_disconnect_backend(np);
++		}
++		break;
+ 	case XenbusStateInitialising:
+ 	case XenbusStateInitialised:
+ 	case XenbusStateReconfiguring:
+ 	case XenbusStateReconfigured:
+-	case XenbusStateUnknown:
+ 		break;
+ 
+ 	case XenbusStateInitWait:
+-		if (dev->state != XenbusStateInitialising)
++		/* allow reconnect if our state is either initialising, or closed */
++		if (dev->state != XenbusStateInitialising &&
++		    dev->state != XenbusStateClosed)
+ 			break;
+ 		if (xennet_connect(netdev) != 0)
+ 			break;

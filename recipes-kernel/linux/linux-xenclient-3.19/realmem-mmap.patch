@@ -1,0 +1,21 @@
+Index: linux-3.19.8/drivers/char/mem.c
+===================================================================
+--- linux-3.19.8.orig/drivers/char/mem.c	2015-05-11 14:34:10.000000000 +0200
++++ linux-3.19.8/drivers/char/mem.c	2015-06-08 15:05:21.491516219 +0200
+@@ -324,9 +324,13 @@
+ 						&vma->vm_page_prot))
+ 		return -EINVAL;
+ 
+-	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
+-						 size,
+-						 vma->vm_page_prot);
++	vma->vm_flags |= VM_DONTDUMP | VM_SPECIAL;
++	vma->vm_page_prot =  __pgprot(
++			pgprot_val(vm_get_page_prot(vma->vm_flags)) |
++			pgprot_val(phys_mem_access_prot(file,
++				vma->vm_pgoff,
++				size,
++				vma->vm_page_prot)));
+ 
+ 	vma->vm_ops = &mmap_mem_ops;
+ 

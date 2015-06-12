@@ -1,0 +1,24 @@
+diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
+index b456b04..b43fa5a 100644
+--- a/arch/x86/xen/p2m.c
++++ b/arch/x86/xen/p2m.c
+@@ -873,6 +873,7 @@ bool set_phys_to_machine(unsigned long pfn, unsigned long mfn)
+ 
+ 	return true;
+ }
++EXPORT_SYMBOL_GPL(set_phys_to_machine);
+ 
+ #define M2P_OVERRIDE_HASH_SHIFT	10
+ #define M2P_OVERRIDE_HASH	(1 << M2P_OVERRIDE_HASH_SHIFT)
+diff --git a/mm/memory.c b/mm/memory.c
+index 90fb265..baf1ef4 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1390,6 +1390,7 @@ void zap_page_range(struct vm_area_struct *vma, unsigned long start,
+ 	mmu_notifier_invalidate_range_end(mm, start, end);
+ 	tlb_finish_mmu(&tlb, start, end);
+ }
++EXPORT_SYMBOL_GPL(zap_page_range);
+ 
+ /**
+  * zap_page_range_single - remove user pages in a given range
