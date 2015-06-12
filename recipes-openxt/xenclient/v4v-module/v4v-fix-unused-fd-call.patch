@@ -1,0 +1,13 @@
+diff --git a/v4v.c b/v4v.c
+index 56e3c85..8fba6c6 100644
+--- a/v4v.c
++++ b/v4v.c
+@@ -2856,7 +2856,7 @@ allocate_fd_with_private (void *private)
+   struct inode *ind;
+ #endif
+ 
+-  fd = get_unused_fd ();
++  fd = get_unused_fd_flags(O_CLOEXEC);
+   if (fd < 0)
+     return fd;
+ 

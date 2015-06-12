@@ -37,7 +37,6 @@ IMAGE_INSTALL = "\
     packagegroup-base \
     packagegroup-xenclient-common \
     packagegroup-xenclient-installer \
-    intel-e1000e \
     intel-e1000e-conf \
     linux-firmware \
     rt2870-firmware \

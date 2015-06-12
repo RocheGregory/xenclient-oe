@@ -1,5 +1,5 @@
-DESCRIPTION = "Linux kernel for dom0 in OpenXT"
-COMPATIBLE_MACHINE = "(xenclient-dom0)"
+DESCRIPTION = "Linux kernel XenClient uivm"
+COMPATIBLE_MACHINE = "(xenclient-uivm)"
 
 PV_MAJOR = "${@"${PV}".split('.', 3)[0]}"
 PV_MINOR = "${@"${PV}".split('.', 3)[1]}"
@@ -10,10 +10,4 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV_MAJOR}.${PV_MINOR}:"
 
 require linux-xenclient-${PV_MAJOR}.${PV_MINOR}.inc
 
-SRC_URI += " \
-            file://pciback-restrictive-attr.patch;patch=1 \
-            file://0002-Add-thorough-reset-interface-to-pciback-s-sysfs.patch;patch=1 \
-            "
-
 PR = "1"
-
