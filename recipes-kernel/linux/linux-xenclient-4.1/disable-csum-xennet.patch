@@ -1,0 +1,33 @@
+diff --git a/drivers/net/xen-netback/interface.c b/drivers/net/xen-netback/interface.c
+index 1a83e19..cf91d4c 100644
+--- a/drivers/net/xen-netback/interface.c
++++ b/drivers/net/xen-netback/interface.c
+@@ -423,9 +423,7 @@ struct xenvif *xenvif_alloc(struct device *parent, domid_t domid,
+ 	spin_lock_init(&vif->lock);
+ 
+ 	dev->netdev_ops	= &xenvif_netdev_ops;
+-	dev->hw_features = NETIF_F_SG |
+-		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
+-		NETIF_F_TSO | NETIF_F_TSO6;
++	dev->hw_features = NETIF_F_SG | NETIF_F_TSO | NETIF_F_TSO6;
+ 	dev->features = dev->hw_features | NETIF_F_RXCSUM;
+ 	dev->ethtool_ops = &xenvif_ethtool_ops;
+ 
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index e031c94..6241bb1 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1261,11 +1261,8 @@ static struct net_device *xennet_create_dev(struct xenbus_device *dev)
+ 
+ 	netdev->netdev_ops	= &xennet_netdev_ops;
+ 
+-	netdev->features        = NETIF_F_IP_CSUM | NETIF_F_RXCSUM |
+-				  NETIF_F_GSO_ROBUST;
+-	netdev->hw_features	= NETIF_F_SG |
+-				  NETIF_F_IPV6_CSUM |
+-				  NETIF_F_TSO | NETIF_F_TSO6;
++	netdev->features        = NETIF_F_RXCSUM | NETIF_F_GSO_ROBUST;
++	netdev->hw_features	= NETIF_F_SG | NETIF_F_TSO | NETIF_F_TSO6;
+ 
+ 	/*
+          * Assume that all hw features are available for now. This set

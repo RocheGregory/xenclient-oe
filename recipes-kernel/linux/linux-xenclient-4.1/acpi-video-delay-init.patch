@@ -1,0 +1,57 @@
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index cc79d3f..ac20b04 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -92,6 +92,9 @@ static int use_native_backlight_param = NATIVE_BACKLIGHT_NOT_SET;
+ module_param_named(use_native_backlight, use_native_backlight_param, int, 0444);
+ static int use_native_backlight_dmi = NATIVE_BACKLIGHT_NOT_SET;
+ 
++static bool delay_init = 0;
++module_param(delay_init, bool, 0644);
++
+ static int register_count;
+ static struct mutex video_list_lock;
+ static struct list_head video_bus_head;
+@@ -2192,6 +2195,22 @@ void acpi_video_unregister_backlight(void)
+ }
+ EXPORT_SYMBOL(acpi_video_unregister_backlight);
+ 
++static ssize_t store_init_acpi_video(struct bus_type *bus,
++                                    const char *buf, size_t count)
++{
++	unsigned int val;
++	if (kstrtouint(buf, 10, &val) || val != 1)
++		return -EINVAL;
++	acpi_video_register();
++	return count;
++}
++
++static struct bus_attribute init_acpi_video_attr = {
++	.attr = {.name = "init_acpi_video", .mode = 0644},
++	.show = NULL,
++	.store = store_init_acpi_video,
++};
++
+ /*
+  * This is kind of nasty. Hardware using Intel chipsets may require
+  * the video opregion code to be run first in order to initialise
+@@ -2214,6 +2233,9 @@ static int __init acpi_video_init(void)
+ 
+ 	dmi_check_system(video_dmi_table);
+ 
++	if (delay_init)
++		return bus_create_file(&acpi_bus_type, &init_acpi_video_attr);
++
+ 	if (intel_opregion_present())
+ 		return 0;
+ 
+@@ -2222,6 +2244,9 @@ static int __init acpi_video_init(void)
+ 
+ static void __exit acpi_video_exit(void)
+ {
++	if (delay_init)
++		bus_remove_file(&acpi_bus_type, &init_acpi_video_attr);
++
+ 	acpi_video_unregister();
+ 
+ 	return;

@@ -1,0 +1,12 @@
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 47f2ce8..67a5676 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -36,7 +36,6 @@ config DRM_KMS_FB_HELPER
+ 	depends on DRM_KMS_HELPER
+ 	select FB
+ 	select FRAMEBUFFER_CONSOLE if !EXPERT
+-	select FRAMEBUFFER_CONSOLE_DETECT_PRIMARY if FRAMEBUFFER_CONSOLE
+ 	help
+ 	  FBDEV helpers for KMS drivers.
+ 

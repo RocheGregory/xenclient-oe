@@ -1,0 +1,347 @@
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index c44a5d5..78163ad 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -50,6 +50,11 @@ extern bool set_phys_to_machine(unsigned long pfn, unsigned long mfn);
+ extern bool __set_phys_to_machine(unsigned long pfn, unsigned long mfn);
+ extern unsigned long set_phys_range_identity(unsigned long pfn_s,
+ 					     unsigned long pfn_e);
++extern int m2p_add_override(unsigned long mfn, struct page *page,
++			    struct gnttab_map_grant_ref *kmap_op);
++extern int m2p_remove_override(struct page *page,
++			       struct gnttab_map_grant_ref *kmap_op,
++                               unsigned long mfn);
+ 
+ extern int set_foreign_p2m_mapping(struct gnttab_map_grant_ref *map_ops,
+ 				   struct gnttab_map_grant_ref *kmap_ops,
+diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
+index a69002e..10cea05 100644
+--- a/drivers/gpu/drm/i915/Makefile
++++ b/drivers/gpu/drm/i915/Makefile
+@@ -31,6 +31,7 @@ i915-y += i915_cmd_parser.o \
+ 	  i915_gem_shrinker.o \
+ 	  i915_gem_stolen.o \
+ 	  i915_gem_tiling.o \
++	  i915_gem_foreign.o \
+ 	  i915_gem_userptr.o \
+ 	  i915_gpu_error.o \
+ 	  i915_irq.o \
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index 68e0c85..92cea46 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -1208,6 +1208,7 @@ const struct drm_ioctl_desc i915_ioctls[] = {
+ 	DRM_IOCTL_DEF_DRV(I915_GEM_USERPTR, i915_gem_userptr_ioctl, DRM_UNLOCKED|DRM_RENDER_ALLOW),
+ 	DRM_IOCTL_DEF_DRV(I915_GEM_CONTEXT_GETPARAM, i915_gem_context_getparam_ioctl, DRM_UNLOCKED|DRM_RENDER_ALLOW),
+ 	DRM_IOCTL_DEF_DRV(I915_GEM_CONTEXT_SETPARAM, i915_gem_context_setparam_ioctl, DRM_UNLOCKED|DRM_RENDER_ALLOW),
++	DRM_IOCTL_DEF_DRV(I915_GEM_FOREIGN, i915_gem_foreign_ioctl, DRM_UNLOCKED),
+ };
+ 
+ int i915_max_ioctl = ARRAY_SIZE(i915_ioctls);
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index 8ae6f7f..fa6e674 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -1986,6 +1986,7 @@ struct drm_i915_gem_object {
+ 
+ 	struct sg_table *pages;
+ 	int pages_pin_count;
++	dma_addr_t *pfnlist;
+ 
+ 	/* prime dma-buf support */
+ 	void *dma_buf_vmapping;
+@@ -2962,6 +2963,8 @@ i915_gem_object_create_stolen_for_preallocated(struct drm_device *dev,
+ unsigned long i915_gem_shrink(struct drm_i915_private *dev_priv,
+ 			      long target,
+ 			      unsigned flags);
++int i915_gem_foreign_ioctl(struct drm_device *dev, void *data,
++			   struct drm_file *file);
+ #define I915_SHRINK_PURGEABLE 0x1
+ #define I915_SHRINK_UNBOUND 0x2
+ #define I915_SHRINK_BOUND 0x4
+diff --git a/drivers/gpu/drm/i915/i915_gem_foreign.c b/drivers/gpu/drm/i915/i915_gem_foreign.c
+new file mode 100644
+index 0000000..80eaf71
+--- /dev/null
++++ b/drivers/gpu/drm/i915/i915_gem_foreign.c
+@@ -0,0 +1,244 @@
++/*
++ * Copyright © 2013 Citrix Systems, Inc.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the next
++ * paragraph) shall be included in all copies or substantial portions of the
++ * Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ *
++ */
++
++#include "drmP.h"
++#include "i915_drm.h"
++#include "i915_drv.h"
++#include "i915_trace.h"
++#include "intel_drv.h"
++#include <linux/mmu_notifier.h>
++#include <linux/swap.h>
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++#include <xen/page.h>
++#include <xen/xen-ops.h>
++#include <xen/balloon.h>
++#include <xen/interface/memory.h>
++
++struct i915_gem_foreign_object {
++	struct drm_i915_gem_object gem;
++	uint64_t *mfns;
++	size_t num_pages;
++	uint32_t flags;
++	struct page **pvec;
++};
++
++static inline struct i915_gem_foreign_object *
++to_foreign_object(struct drm_i915_gem_object *obj)
++{
++	return container_of(obj, struct i915_gem_foreign_object, gem);
++}
++
++static void
++i915_gem_foreign_free_pages(struct i915_gem_foreign_object *vmap,
++			    int num_pages)
++{
++	int i;
++
++	if ((vmap->flags & I915_FOREIGN_BALLOON_PAGES) == 0)
++		for (i = 0; i < num_pages; i++)
++			__free_page(vmap->pvec[i]);
++        else
++		free_xenballooned_pages(num_pages, vmap->pvec);
++}
++
++static void
++i915_gem_foreign_remove_override(struct i915_gem_foreign_object *vmap,
++				 int num_pages)
++{
++	int i;
++
++	for (i = 0; i < num_pages; i++)
++		if (m2p_remove_override(vmap->pvec[i], NULL, vmap->mfns[i]))
++			BUG();
++}
++
++static int
++i915_gem_foreign_get_pages(struct drm_i915_gem_object *obj)
++{
++	struct i915_gem_foreign_object *vmap = to_foreign_object(obj);
++	struct sg_table *st = NULL;
++	struct scatterlist *sg = NULL;
++	int i, ret;
++
++	vmap->pvec = kmalloc(vmap->num_pages * sizeof(struct page *),
++			 GFP_KERNEL | __GFP_NOWARN | __GFP_NORETRY);
++	if (vmap->pvec == NULL) {
++		vmap->pvec = drm_malloc_ab(vmap->num_pages,
++					   sizeof(struct page *));
++		if (vmap->pvec == NULL)
++			return -ENOMEM;
++	}
++
++	st = kmalloc(sizeof(*st), GFP_KERNEL);
++	if (st == NULL) {
++		ret = -ENOMEM;
++		goto err0;
++	}
++
++	if (sg_alloc_table(st, vmap->num_pages, GFP_KERNEL)) {
++		ret = -ENOMEM;
++		goto err0;
++	}
++
++	if ((vmap->flags & I915_FOREIGN_BALLOON_PAGES) == 0) {
++		for (i = 0; i < vmap->num_pages; i++) {
++			vmap->pvec[i] = alloc_page(GFP_HIGHUSER);
++			if (!vmap->pvec[i]) {
++				i915_gem_foreign_free_pages(vmap, i - 1);
++				ret = -ENOMEM;
++				goto err0;
++			}
++		}
++	} else {
++		/* Using balloon allocated pages to override */
++		ret = alloc_xenballooned_pages(vmap->num_pages, vmap->pvec,
++				vmap->flags & I915_FOREIGN_BALLOON_HIGH);
++		if (ret) {
++			DRM_ERROR("Xen allocate balloon memory failed\n");
++			goto err0;
++		}
++	}
++
++	for (i = 0; i < vmap->num_pages; i++) {
++		ret = m2p_add_override(vmap->mfns[i], vmap->pvec[i], NULL);
++		if (ret) {
++			i915_gem_foreign_remove_override(vmap, i - 1);
++			goto err1;
++		}
++	}
++
++	for_each_sg(st->sgl, sg, vmap->num_pages, i) {
++		sg_set_page(sg, vmap->pvec[i], PAGE_SIZE, 0);
++	}
++
++	obj->pages = st;
++
++	return 0;
++
++err1:
++	i915_gem_foreign_free_pages(vmap, vmap->num_pages);
++err0:
++	if (st) {
++		sg_free_table(st);
++		kfree(st);
++	}
++	drm_free_large(vmap->pvec);
++
++	return ret;
++}
++
++static void
++i915_gem_foreign_put_pages(struct drm_i915_gem_object *obj)
++{
++	struct i915_gem_foreign_object *vmap = to_foreign_object(obj);
++	int num_pages = obj->base.size >> PAGE_SHIFT;
++
++	i915_gem_foreign_remove_override(vmap, num_pages);
++
++	i915_gem_foreign_free_pages(vmap, num_pages);
++
++	sg_free_table(obj->pages);
++	kfree(obj->pages);
++	drm_free_large(vmap->pvec);
++}
++
++static void
++i915_gem_foreign_release(struct drm_i915_gem_object *obj)
++{
++	struct i915_gem_foreign_object *vmap = to_foreign_object(obj);
++
++	kfree(vmap->mfns);
++}
++
++static const struct drm_i915_gem_object_ops i915_gem_foreign_ops = {
++	.get_pages = i915_gem_foreign_get_pages,
++	.put_pages = i915_gem_foreign_put_pages,
++	.release = i915_gem_foreign_release,
++};
++
++/*
++ * Creates a new mm object that wraps some user memory.
++ */
++int
++i915_gem_foreign_ioctl(struct drm_device *dev, void *data,
++			struct drm_file *file)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	struct drm_i915_gem_foreign *args = data;
++	struct i915_gem_foreign_object *obj;
++	uint32_t size;
++	int ret = -ENOMEM;
++	u32 handle;
++
++	if ((args->num_pages * PAGE_SIZE) > dev_priv->gtt.base.total)
++		return -E2BIG;
++
++	/* Allocate the new object */
++	obj = kzalloc(sizeof(*obj), GFP_KERNEL);
++	if (!obj)
++		return -ENOMEM;
++
++	drm_gem_private_object_init(dev, &obj->gem.base,
++				    args->num_pages * PAGE_SIZE);
++
++	i915_gem_object_init(&obj->gem, &i915_gem_foreign_ops);
++	obj->gem.cache_level = I915_CACHE_LLC;
++        /* What about CACHE_L3_LLC? */
++
++	//obj->gem.gtt_offset = 0;
++	obj->num_pages = args->num_pages;
++	obj->flags = args->flags;
++
++	/* Pull up MFN list from userland */
++	size = args->num_pages * sizeof(uint64_t);
++	obj->mfns = kzalloc(size, GFP_KERNEL);
++	if (!obj->mfns)
++		goto err;
++
++	if (copy_from_user(obj->mfns, args->mfns, size)) {
++		ret = -EFAULT;
++		goto err;
++	}
++
++	ret = drm_gem_handle_create(file, &obj->gem.base, &handle);
++	/*
++	 * Drop reference from allocate - handle holds it now. If the
++	 * previous call failed, this will drop the ref cound to 0
++	 * freeing undoing everything above and cleaning up in the
++	 * release function above.
++         */
++	drm_gem_object_unreference(&obj->gem.base);
++	if (ret)
++		return ret;
++
++	args->handle = handle;
++	return 0;
++
++err:
++	kfree(obj->mfns);
++	kfree(obj);
++	return ret;
++}
++
+diff --git a/include/uapi/drm/i915_drm.h b/include/uapi/drm/i915_drm.h
+index 551b673..548e97f 100644
+--- a/include/uapi/drm/i915_drm.h
++++ b/include/uapi/drm/i915_drm.h
+@@ -226,6 +226,7 @@ typedef struct _drm_i915_sarea {
+ #define DRM_I915_GEM_USERPTR		0x33
+ #define DRM_I915_GEM_CONTEXT_GETPARAM	0x34
+ #define DRM_I915_GEM_CONTEXT_SETPARAM	0x35
++#define DRM_I915_GEM_FOREIGN		0x36
+ 
+ #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
+ #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
+@@ -279,6 +280,7 @@ typedef struct _drm_i915_sarea {
+ #define DRM_IOCTL_I915_GEM_USERPTR			DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_USERPTR, struct drm_i915_gem_userptr)
+ #define DRM_IOCTL_I915_GEM_CONTEXT_GETPARAM	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_CONTEXT_GETPARAM, struct drm_i915_gem_context_param)
+ #define DRM_IOCTL_I915_GEM_CONTEXT_SETPARAM	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_CONTEXT_SETPARAM, struct drm_i915_gem_context_param)
++#define DRM_IOCTL_I915_GEM_FOREIGN		DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_FOREIGN, struct drm_i915_gem_foreign)
+ 
+ /* Allow drivers to submit batchbuffers directly to hardware, relying
+  * on the security mechanisms provided by hardware.
+@@ -1082,6 +1084,15 @@ struct drm_i915_reset_stats {
+ 	__u32 pad;
+ };
+ 
++struct drm_i915_gem_foreign {
++	__u64 __user *mfns;
++	__u32 num_pages;
++#define I915_FOREIGN_BALLOON_PAGES 0x00000001
++#define I915_FOREIGN_BALLOON_HIGH  0x00000002
++	__u32 flags;
++	__u32 handle;
++};
++
+ struct drm_i915_gem_userptr {
+ 	__u64 user_ptr;
+ 	__u64 user_size;

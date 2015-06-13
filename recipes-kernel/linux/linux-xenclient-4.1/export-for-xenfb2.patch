@@ -1,0 +1,45 @@
+diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
+index b47124d..ebdc161 100644
+--- a/arch/x86/xen/p2m.c
++++ b/arch/x86/xen/p2m.c
+@@ -655,6 +655,7 @@ bool set_phys_to_machine(unsigned long pfn, unsigned long mfn)
+ 
+ 	return true;
+ }
++EXPORT_SYMBOL_GPL(set_phys_to_machine);
+ 
+ int set_foreign_p2m_mapping(struct gnttab_map_grant_ref *map_ops,
+ 			    struct gnttab_map_grant_ref *kmap_ops,
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 1094623..6e9be08 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2254,6 +2254,16 @@ config XEN_FBDEV_FRONTEND
+ 	  frame buffer driver.  It communicates with a back-end
+ 	  in another domain.
+ 
++config XEN_FBDEV2_FRONTEND
++        tristate "Xen virtual frame buffer support for XenClient"
++        depends on FB && XEN
++        select FB_CFB_COPYAREA
++        select FB_CFB_IMAGEBLIT
++        select FB_CFB_FILLRECT
++        default y
++        help
++          Hack to compile the needed functions for xenfb2
++
+ config FB_METRONOME
+ 	tristate "E-Ink Metronome/8track controller support"
+ 	depends on FB
+diff --git a/mm/memory.c b/mm/memory.c
+index 22e037e..2430850 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1366,6 +1366,7 @@ void zap_page_range(struct vm_area_struct *vma, unsigned long start,
+ 	mmu_notifier_invalidate_range_end(mm, start, end);
+ 	tlb_finish_mmu(&tlb, start, end);
+ }
++EXPORT_SYMBOL_GPL(zap_page_range);
+ 
+ /**
+  * zap_page_range_single - remove user pages in a given range
