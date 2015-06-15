@@ -37,6 +37,7 @@ SRC_URI = "https://www.kernel.org/pub/linux/kernel/v${PV_MAJOR}.x/linux-${PV}.ta
     file://gem-foreign-debug.patch;patch=1 \
     file://fbcon-do-not-drag-detect-primary-option.patch;patch=1 \
     file://usbback-base.patch;patch=1 \
+    file://enable-pat.patch \
     file://defconfig"
 
 SRC_URI[kernel.md5sum] = "8c49740da53f2098deee2f9fb6dfcc6a"
