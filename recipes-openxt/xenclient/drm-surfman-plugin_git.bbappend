@@ -17,8 +17,6 @@ FILES_${PN} += " \
     /usr/share/xenclient/discrete_gfx_modprobe.sh \
 "
 
-CFLAGS_append += " -DWL_EGL_PLATFORM "
-
 #Add Mesa and its drivers to the list of DRM plugin dependencies.
 DEPENDS  += "mesa-dri (>=9.1.4)"
 RDEPENDS_${PN} += "mesa-dri-driver-nouveau mesa-dri-driver-nouveau-vieux mesa-dri-driver-i965"

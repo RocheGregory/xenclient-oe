@@ -58,8 +58,6 @@ EXTRA_OECONF = "\
     --with-dri-drivers=${DRI_DRIVERS}   \
     "
 
-CFLAGS_append += " -DWL_EGL_PLATFORM "
-
 python populate_packages_prepend() {
     import os.path
 
