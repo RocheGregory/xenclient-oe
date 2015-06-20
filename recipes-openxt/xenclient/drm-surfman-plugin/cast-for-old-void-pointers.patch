@@ -1,0 +1,22 @@
+diff --git a/src/device-gles.c b/src/device-gles.c
+index cd4318f..b5c7c9a 100644
+--- a/src/device-gles.c
++++ b/src/device-gles.c
+@@ -381,7 +381,7 @@ static int set_up_egl(struct gles_display * display)
+ 
+   //Convert the GBM surface into an EGL drawing "window";
+   //this will allow OpenGL to render to the given GBM surface.
+-	egl->display = eglGetDisplay(display->gbm.dev);
++	egl->display = eglGetDisplay((EGLNativeDisplayType)display->gbm.dev);
+ 
+   //And initialize EGL on the given display.
+ 	if (!eglInitialize(egl->display, &major, &minor)) {
+@@ -418,7 +418,7 @@ static int set_up_egl(struct gles_display * display)
+ 
+   //Create an on-screen rendering surface; this is what we'll use to do our actual
+   //rendering!
+-	egl->surface = eglCreateWindowSurface(egl->display, egl->config, display->gbm.surface, NULL);
++	egl->surface = eglCreateWindowSurface(egl->display, egl->config, (EGLNativeWindowType)display->gbm.surface, NULL);
+ 	if (egl->surface == EGL_NO_SURFACE) {
+ 		DRM_ERR("failed to create egl surface\n");
+ 		return SURFMAN_ERROR;

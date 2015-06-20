@@ -1,0 +1,19 @@
+diff --git a/plugins/drm/src/device-gles.h b/plugins/drm/src/device-gles.h
+index f248a8b..e1eb0b8 100644
+--- a/plugins/drm/src/device-gles.h
++++ b/plugins/drm/src/device-gles.h
+@@ -29,10 +29,10 @@
+ //Older versions of mesa define the unpack extensions without the standards-compliant _EXT suffix.
+ //If we have these older definitions (but not the compliant newer ones), we'll define the newer ones
+ //instead. This should let us work no matter the Mesa version.
+-#if !defined(GL_UNPACK_ROW_LENGTH_EXT) && defined(GL_UNPACK_ROW_LENGTH)
+-  #define GL_UNPACK_ROW_LENGTH_EXT  GL_UNPACK_ROW_LENGTH
+-  #define GL_UNPACK_SKIP_ROWS_EXT   GL_UNPACK_SKIP_ROWS
+-  #define GL_UNPACK_SKIP_PIXELS_EXT GL_UNPACK_SKIP_PIXELS
++#if !defined(GL_UNPACK_ROW_LENGTH) && defined(GL_UNPACK_ROW_LENGTH_EXT)
++  #define GL_UNPACK_ROW_LENGTH  GL_UNPACK_ROW_LENGTH_EXT
++  #define GL_UNPACK_SKIP_ROWS   GL_UNPACK_SKIP_ROWS_EXT
++  #define GL_UNPACK_SKIP_PIXELS GL_UNPACK_SKIP_PIXELS_EXT
+ #endif
+ 
+ /**

@@ -19,7 +19,7 @@
 
 # Currently in OpenXT, i915 will always be loaded and surfman will use
 # the drm plugin by default.
-/sbin/modprobe -i i915
+/sbin/modprobe i915
 exit 0
 
 
