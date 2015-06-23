@@ -1,0 +1,33 @@
+Index: linux-3.19.8/drivers/net/xen-netback/interface.c
+===================================================================
+--- linux-3.19.8.orig/drivers/net/xen-netback/interface.c	2015-06-08 14:20:23.792385356 +0200
++++ linux-3.19.8/drivers/net/xen-netback/interface.c	2015-06-08 14:24:52.589200253 +0200
+@@ -424,9 +424,7 @@
+ 	spin_lock_init(&vif->lock);
+ 
+ 	dev->netdev_ops	= &xenvif_netdev_ops;
+-	dev->hw_features = NETIF_F_SG |
+-		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
+-		NETIF_F_TSO | NETIF_F_TSO6;
++	dev->hw_features = NETIF_F_SG | NETIF_F_TSO | NETIF_F_TSO6;
+ 	dev->features = dev->hw_features | NETIF_F_RXCSUM;
+ 	dev->ethtool_ops = &xenvif_ethtool_ops;
+ 
+Index: linux-3.19.8/drivers/net/xen-netfront.c
+===================================================================
+--- linux-3.19.8.orig/drivers/net/xen-netfront.c	2015-06-08 14:20:23.925717109 +0200
++++ linux-3.19.8/drivers/net/xen-netfront.c	2015-06-08 14:23:31.343496161 +0200
+@@ -1315,11 +1315,8 @@
+ 
+ 	netdev->netdev_ops	= &xennet_netdev_ops;
+ 
+-	netdev->features        = NETIF_F_IP_CSUM | NETIF_F_RXCSUM |
+-				  NETIF_F_GSO_ROBUST;
+-	netdev->hw_features	= NETIF_F_SG |
+-				  NETIF_F_IPV6_CSUM |
+-				  NETIF_F_TSO | NETIF_F_TSO6;
++	netdev->features        = NETIF_F_RXCSUM | NETIF_F_GSO_ROBUST;
++	netdev->hw_features	= NETIF_F_SG | NETIF_F_TSO | NETIF_F_TSO6;
+ 
+ 	/*
+          * Assume that all hw features are available for now. This set

@@ -1,0 +1,12 @@
+Index: linux-3.19.8/drivers/xen/Kconfig
+===================================================================
+--- linux-3.19.8.orig/drivers/xen/Kconfig	2015-06-08 11:19:32.949231563 +0200
++++ linux-3.19.8/drivers/xen/Kconfig	2015-06-08 14:14:25.206636448 +0200
+@@ -94,7 +94,6 @@
+ 
+ config XEN_BACKEND
+ 	bool "Backend driver support"
+-	depends on XEN_DOM0
+ 	default y
+ 	help
+ 	  Support for backend device drivers that provide I/O services
