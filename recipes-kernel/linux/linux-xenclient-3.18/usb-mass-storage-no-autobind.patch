@@ -1,7 +1,7 @@
-Index: linux-3.19.8/drivers/usb/core/devio.c
+Index: linux-3.18.16/drivers/usb/core/devio.c
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/core/devio.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/drivers/usb/core/devio.c	2015-06-05 15:24:07.001754199 +0200
+--- linux-3.18.16.orig/drivers/usb/core/devio.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/usb/core/devio.c	2015-06-19 15:18:48.499807442 +0200
 @@ -900,6 +900,12 @@
  	if (dev->state == USB_STATE_NOTATTACHED)
  		goto out_unlock_device;
@@ -23,10 +23,10 @@ Index: linux-3.19.8/drivers/usb/core/devio.c
  	usb_unlock_device(dev);
  	usb_put_dev(dev);
  	put_pid(ps->disc_pid);
-Index: linux-3.19.8/drivers/usb/core/driver.c
+Index: linux-3.18.16/drivers/usb/core/driver.c
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/core/driver.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/drivers/usb/core/driver.c	2015-06-05 15:24:07.101753006 +0200
+--- linux-3.18.16.orig/drivers/usb/core/driver.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/usb/core/driver.c	2015-06-19 15:18:48.669805457 +0200
 @@ -260,6 +260,7 @@
  
  	if (!error)
@@ -35,10 +35,10 @@ Index: linux-3.19.8/drivers/usb/core/driver.c
  	return error;
  }
  
-Index: linux-3.19.8/drivers/usb/core/hub.c
+Index: linux-3.18.16/drivers/usb/core/hub.c
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/core/hub.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/drivers/usb/core/hub.c	2015-06-05 15:24:07.205085106 +0200
+--- linux-3.18.16.orig/drivers/usb/core/hub.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/usb/core/hub.c	2015-06-19 15:18:48.773137585 +0200
 @@ -2430,6 +2430,7 @@
  	 */
  	usb_disable_autosuspend(udev);
@@ -47,10 +47,10 @@ Index: linux-3.19.8/drivers/usb/core/hub.c
  	err = usb_enumerate_device(udev);	/* Read descriptors */
  	if (err < 0)
  		goto fail;
-Index: linux-3.19.8/drivers/usb/storage/usb.c
+Index: linux-3.18.16/drivers/usb/storage/usb.c
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/storage/usb.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/drivers/usb/storage/usb.c	2015-06-05 15:24:07.305083911 +0200
+--- linux-3.18.16.orig/drivers/usb/storage/usb.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/usb/storage/usb.c	2015-06-19 15:18:48.869803123 +0200
 @@ -89,6 +89,9 @@
  module_param_string(quirks, quirks, sizeof(quirks), S_IRUGO | S_IWUSR);
  MODULE_PARM_DESC(quirks, "supplemental list of device IDs and their quirks");
@@ -61,7 +61,7 @@ Index: linux-3.19.8/drivers/usb/storage/usb.c
  
  /*
   * The entries in this table correspond, line for line,
-@@ -1071,6 +1074,7 @@
+@@ -1063,6 +1066,7 @@
  	struct us_data *us;
  	int result;
  	int size;
@@ -69,7 +69,7 @@ Index: linux-3.19.8/drivers/usb/storage/usb.c
  
  	/* If uas is enabled and this device can do uas then ignore it. */
  #if IS_ENABLED(CONFIG_USB_UAS)
-@@ -1085,6 +1089,12 @@
+@@ -1077,6 +1081,12 @@
  	if (usb_usual_ignore_device(intf))
  		return -ENXIO;
  
@@ -82,10 +82,10 @@ Index: linux-3.19.8/drivers/usb/storage/usb.c
  	/*
  	 * Call the general probe procedures.
  	 *
-Index: linux-3.19.8/include/linux/usb.h
+Index: linux-3.18.16/include/linux/usb.h
 ===================================================================
---- linux-3.19.8.orig/include/linux/usb.h	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/include/linux/usb.h	2015-06-05 15:24:07.405082717 +0200
+--- linux-3.18.16.orig/include/linux/usb.h	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/include/linux/usb.h	2015-06-19 15:18:48.989801722 +0200
 @@ -531,6 +531,7 @@
   *	to keep track of the number of functions that require USB 3.0 Link Power
   *	Management to be disabled for this usb_device.  This count should only

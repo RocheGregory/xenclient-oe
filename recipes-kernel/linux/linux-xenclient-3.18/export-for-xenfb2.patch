@@ -1,8 +1,8 @@
-Index: linux-3.19.8/arch/x86/xen/p2m.c
+Index: linux-3.18.16/arch/x86/xen/p2m.c
 ===================================================================
---- linux-3.19.8.orig/arch/x86/xen/p2m.c	2015-06-08 14:03:53.360799899 +0200
-+++ linux-3.19.8/arch/x86/xen/p2m.c	2015-06-08 14:04:21.240468924 +0200
-@@ -659,6 +659,7 @@
+--- linux-3.18.16.orig/arch/x86/xen/p2m.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/xen/p2m.c	2015-06-19 15:18:59.269681707 +0200
+@@ -873,6 +873,7 @@
  
  	return true;
  }
@@ -10,11 +10,11 @@ Index: linux-3.19.8/arch/x86/xen/p2m.c
  
  #define M2P_OVERRIDE_HASH_SHIFT	10
  #define M2P_OVERRIDE_HASH	(1 << M2P_OVERRIDE_HASH_SHIFT)
-Index: linux-3.19.8/mm/memory.c
+Index: linux-3.18.16/mm/memory.c
 ===================================================================
---- linux-3.19.8.orig/mm/memory.c	2015-06-08 14:03:53.627463399 +0200
-+++ linux-3.19.8/mm/memory.c	2015-06-08 14:04:21.460466317 +0200
-@@ -1391,6 +1391,7 @@
+--- linux-3.18.16.orig/mm/memory.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/mm/memory.c	2015-06-19 15:18:59.439679723 +0200
+@@ -1390,6 +1390,7 @@
  	mmu_notifier_invalidate_range_end(mm, start, end);
  	tlb_finish_mmu(&tlb, start, end);
  }
@@ -22,11 +22,11 @@ Index: linux-3.19.8/mm/memory.c
  
  /**
   * zap_page_range_single - remove user pages in a given range
-Index: linux-3.19.8/drivers/video/fbdev/Kconfig
+Index: linux-3.18.16/drivers/video/fbdev/Kconfig
 ===================================================================
---- linux-3.19.8.orig/drivers/video/fbdev/Kconfig	2015-06-08 14:07:52.877957059 +0200
-+++ linux-3.19.8/drivers/video/fbdev/Kconfig	2015-06-08 14:10:42.745941639 +0200
-@@ -2257,6 +2257,16 @@
+--- linux-3.18.16.orig/drivers/video/fbdev/Kconfig	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/video/fbdev/Kconfig	2015-06-19 15:18:59.556345027 +0200
+@@ -2274,6 +2274,16 @@
  	  frame buffer driver.  It communicates with a back-end
  	  in another domain.
  

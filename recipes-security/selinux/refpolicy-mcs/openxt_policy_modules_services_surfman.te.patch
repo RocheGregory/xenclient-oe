@@ -1,6 +1,6 @@
 --- a/policy/modules/services/surfman.te	1969-12-31 19:00:00.000000000 -0500
 +++ b/policy/modules/services/surfman.te	2015-01-05 16:03:12.793080030 -0500
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,95 @@
 +#############################################################################
 +#
 +# Copyright (C) 2014 Citrix Systems, Inc.
@@ -90,6 +90,9 @@
 +
 +allow surfman_t surfman_var_run_t:file manage_file_perms;
 +allow surfman_t surfman_var_run_t:sock_file manage_sock_file_perms;
++
++# allow read/write of tmpfs for using GLES instead of foreign
++fs_rw_tmpfs_files(surfman_t)
 +
 +udev_read_db(surfman_t)
 +udev_read_pid_files(surfman_t)

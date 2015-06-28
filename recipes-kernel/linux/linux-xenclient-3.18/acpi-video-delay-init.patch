@@ -1,7 +1,7 @@
-Index: linux-3.19.8/drivers/acpi/video.c
+Index: linux-3.18.16/drivers/acpi/video.c
 ===================================================================
---- linux-3.19.8.orig/drivers/acpi/video.c	2015-06-08 11:19:32.932565087 +0200
-+++ linux-3.19.8/drivers/acpi/video.c	2015-06-08 11:20:36.061838957 +0200
+--- linux-3.18.16.orig/drivers/acpi/video.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/acpi/video.c	2015-06-19 15:18:51.739769617 +0200
 @@ -86,6 +86,9 @@
  module_param_named(use_native_backlight, use_native_backlight_param, int, 0444);
  static bool use_native_backlight_dmi = true;
@@ -12,7 +12,7 @@ Index: linux-3.19.8/drivers/acpi/video.c
  static int register_count;
  static struct mutex video_list_lock;
  static struct list_head video_bus_head;
-@@ -2140,6 +2143,22 @@
+@@ -2115,6 +2118,22 @@
  }
  EXPORT_SYMBOL(acpi_video_unregister_backlight);
  
@@ -35,7 +35,7 @@ Index: linux-3.19.8/drivers/acpi/video.c
  /*
   * This is kind of nasty. Hardware using Intel chipsets may require
   * the video opregion code to be run first in order to initialise
-@@ -2162,6 +2181,9 @@
+@@ -2137,6 +2156,9 @@
  
  	dmi_check_system(video_dmi_table);
  
@@ -45,7 +45,7 @@ Index: linux-3.19.8/drivers/acpi/video.c
  	if (intel_opregion_present())
  		return 0;
  
-@@ -2170,6 +2192,9 @@
+@@ -2145,6 +2167,9 @@
  
  static void __exit acpi_video_exit(void)
  {

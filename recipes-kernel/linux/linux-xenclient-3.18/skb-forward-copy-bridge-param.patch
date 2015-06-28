@@ -1,7 +1,7 @@
-Index: linux-3.19.8/net/bridge/br_forward.c
+Index: linux-3.18.16/net/bridge/br_forward.c
 ===================================================================
---- linux-3.19.8.orig/net/bridge/br_forward.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/net/bridge/br_forward.c	2015-06-05 16:25:33.604434833 +0200
+--- linux-3.18.16.orig/net/bridge/br_forward.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/net/bridge/br_forward.c	2015-06-19 15:18:52.626425932 +0200
 @@ -11,6 +11,7 @@
   *	2 of the License, or (at your option) any later version.
   */

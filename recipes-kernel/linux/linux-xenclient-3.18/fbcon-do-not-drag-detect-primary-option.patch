@@ -1,7 +1,7 @@
-Index: linux-3.19.8/drivers/gpu/drm/Kconfig
+Index: linux-3.18.16/drivers/gpu/drm/Kconfig
 ===================================================================
---- linux-3.19.8.orig/drivers/gpu/drm/Kconfig	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/drivers/gpu/drm/Kconfig	2015-06-09 15:26:39.542066771 +0200
+--- linux-3.18.16.orig/drivers/gpu/drm/Kconfig	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/gpu/drm/Kconfig	2015-06-19 15:19:43.442499271 +0200
 @@ -36,7 +36,6 @@
  	depends on DRM_KMS_HELPER
  	select FB

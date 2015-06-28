@@ -1,8 +1,8 @@
-Index: linux-3.19.8/drivers/net/xen-netfront.c
+Index: linux-3.18.16/drivers/net/xen-netfront.c
 ===================================================================
---- linux-3.19.8.orig/drivers/net/xen-netfront.c	2015-06-08 18:58:54.733700620 +0200
-+++ linux-3.19.8/drivers/net/xen-netfront.c	2015-06-08 19:04:49.212949987 +0200
-@@ -2031,15 +2031,26 @@
+--- linux-3.18.16.orig/drivers/net/xen-netfront.c	2015-06-19 15:19:02.539643530 +0200
++++ linux-3.18.16/drivers/net/xen-netfront.c	2015-06-19 15:19:07.339587490 +0200
+@@ -2056,15 +2056,26 @@
  	dev_dbg(&dev->dev, "%s\n", xenbus_strstate(backend_state));
  
  	switch (backend_state) {

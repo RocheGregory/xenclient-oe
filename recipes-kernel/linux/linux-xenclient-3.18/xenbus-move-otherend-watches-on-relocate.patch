@@ -1,8 +1,8 @@
-Index: linux-3.19.8/drivers/xen/xenbus/xenbus_probe.c
+Index: linux-3.18.16/drivers/xen/xenbus/xenbus_probe.c
 ===================================================================
---- linux-3.19.8.orig/drivers/xen/xenbus/xenbus_probe.c	2015-06-10 18:22:24.632990024 +0200
-+++ linux-3.19.8/drivers/xen/xenbus/xenbus_probe.c	2015-06-10 23:36:21.681033687 +0200
-@@ -544,12 +544,34 @@
+--- linux-3.18.16.orig/drivers/xen/xenbus/xenbus_probe.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/xen/xenbus/xenbus_probe.c	2015-06-19 15:19:06.509597181 +0200
+@@ -545,12 +545,34 @@
  	return (len == 0) ? i : -ERANGE;
  }
  
@@ -38,7 +38,7 @@ Index: linux-3.19.8/drivers/xen/xenbus/xenbus_probe.c
  
  	if (char_count(node, '/') < 2)
  		return;
-@@ -572,12 +594,20 @@
+@@ -573,12 +595,20 @@
  	if (!root)
  		return;
  

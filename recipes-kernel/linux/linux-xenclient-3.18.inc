@@ -5,10 +5,12 @@ require recipes-kernel/linux/linux.inc
 
 DEPENDS += "bc-native"
 
-LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 KERNEL_IMAGETYPE = "bzImage"
 
 SRC_URI = "https://www.kernel.org/pub/linux/kernel/v${PV_MAJOR}.x/linux-${PV}.tar.gz;name=kernel \
+    file://bp-make-cache-mode-real-type.patch;patch=1 \
+    file://bp-pat-cache-mode-translation-tables.patch;patch=1 \
+    file://bp-support-xen-pvdomains-using-pat.patch;patch=1 \
     file://xen-acpi-wmi.patch;patch=1 \
     file://bridge-carrier-follow-prio0.patch;patch=1 \
     file://privcmd-mmapnocache-ioctl.patch;patch=1 \
@@ -37,11 +39,10 @@ SRC_URI = "https://www.kernel.org/pub/linux/kernel/v${PV_MAJOR}.x/linux-${PV}.ta
     file://gem-foreign-debug.patch;patch=1 \
     file://fbcon-do-not-drag-detect-primary-option.patch;patch=1 \
     file://usbback-base.patch;patch=1 \
-    file://enable-pat.patch \
     file://defconfig"
 
-SRC_URI[kernel.md5sum] = "8c49740da53f2098deee2f9fb6dfcc6a"
-SRC_URI[kernel.sha256sum] = "227f325e95942d9170025fa910bbb568b31f09effc97a4119f5f0fa20626e3a0"
+SRC_URI[kernel.md5sum] = "e2cb00e62421cbc3425272d437fab05e"
+SRC_URI[kernel.sha256sum] = "1055d0a121734061d2768c5296bf078ce716757965e30379c754f695db59078e"
 
 S = "${WORKDIR}/linux-${PV}"
 

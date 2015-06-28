@@ -1,7 +1,7 @@
-Index: linux-3.19.8/drivers/usb/Kconfig
+Index: linux-3.18.16/drivers/usb/Kconfig
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/Kconfig	2015-06-10 23:39:34.785432486 +0200
-+++ linux-3.19.8/drivers/usb/Kconfig	2015-06-10 23:58:42.955178017 +0200
+--- linux-3.18.16.orig/drivers/usb/Kconfig	2015-06-19 17:19:31.285677575 +0200
++++ linux-3.18.16/drivers/usb/Kconfig	2015-06-19 17:20:51.264756495 +0200
 @@ -94,6 +94,17 @@
  
  source "drivers/usb/usbip/Kconfig"
@@ -20,20 +20,20 @@ Index: linux-3.19.8/drivers/usb/Kconfig
  endif
  
  source "drivers/usb/musb/Kconfig"
-Index: linux-3.19.8/drivers/usb/Makefile
+Index: linux-3.18.16/drivers/usb/Makefile
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/Makefile	2015-06-10 23:39:34.852098370 +0200
-+++ linux-3.19.8/drivers/usb/Makefile	2015-06-10 23:58:43.105176231 +0200
+--- linux-3.18.16.orig/drivers/usb/Makefile	2015-06-19 17:19:31.355676770 +0200
++++ linux-3.18.16/drivers/usb/Makefile	2015-06-19 17:20:51.451421012 +0200
 @@ -62,3 +62,5 @@
  obj-$(CONFIG_USB_COMMON)	+= common/
  
  obj-$(CONFIG_USBIP_CORE)	+= usbip/
 +
 +obj-$(CONFIG_XEN_USBDEV_BACKEND) += xen-usbback/
-Index: linux-3.19.8/drivers/usb/core/Makefile
+Index: linux-3.18.16/drivers/usb/core/Makefile
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/core/Makefile	2015-06-10 23:39:34.818765430 +0200
-+++ linux-3.19.8/drivers/usb/core/Makefile	2015-06-10 23:58:43.215174921 +0200
+--- linux-3.18.16.orig/drivers/usb/core/Makefile	2015-06-19 17:19:31.319010525 +0200
++++ linux-3.18.16/drivers/usb/core/Makefile	2015-06-19 17:20:51.558086452 +0200
 @@ -6,6 +6,7 @@
  usbcore-y += config.o file.o buffer.o sysfs.o endpoint.o
  usbcore-y += devio.o notify.o generic.o quirks.o devices.o
@@ -42,10 +42,10 @@ Index: linux-3.19.8/drivers/usb/core/Makefile
  
  usbcore-$(CONFIG_PCI)		+= hcd-pci.o
  usbcore-$(CONFIG_ACPI)		+= usb-acpi.o
-Index: linux-3.19.8/drivers/usb/core/dusb.c
+Index: linux-3.18.16/drivers/usb/core/dusb.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/core/dusb.c	2015-06-11 00:03:54.781466306 +0200
++++ linux-3.18.16/drivers/usb/core/dusb.c	2015-06-19 17:20:51.678085068 +0200
 @@ -0,0 +1,169 @@
 +/*****************************************************************************/
 +
@@ -216,10 +216,10 @@ Index: linux-3.19.8/drivers/usb/core/dusb.c
 +}
 +EXPORT_SYMBOL(dusb_dev_controller_speed);
 +
-Index: linux-3.19.8/drivers/usb/core/hub.c
+Index: linux-3.18.16/drivers/usb/core/hub.c
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/core/hub.c	2015-06-10 23:58:32.481969407 +0200
-+++ linux-3.19.8/drivers/usb/core/hub.c	2015-06-10 23:58:43.405172659 +0200
+--- linux-3.18.16.orig/drivers/usb/core/hub.c	2015-06-19 17:20:40.981541608 +0200
++++ linux-3.18.16/drivers/usb/core/hub.c	2015-06-19 17:20:51.774750621 +0200
 @@ -1011,6 +1011,15 @@
  	return 0;
  }
@@ -236,7 +236,7 @@ Index: linux-3.19.8/drivers/usb/core/hub.c
  enum hub_activation_type {
  	HUB_INIT, HUB_INIT2, HUB_INIT3,		/* INITs must come first */
  	HUB_POST_RESET, HUB_RESUME, HUB_RESET_RESUME,
-@@ -5527,7 +5536,7 @@
+@@ -5529,7 +5538,7 @@
  			struct usb_driver *drv;
  			int unbind = 0;
  
@@ -245,7 +245,7 @@ Index: linux-3.19.8/drivers/usb/core/hub.c
  				drv = to_usb_driver(cintf->dev.driver);
  				if (drv->pre_reset && drv->post_reset)
  					unbind = (drv->pre_reset)(cintf);
-@@ -5548,7 +5557,12 @@
+@@ -5550,7 +5559,12 @@
  		for (i = config->desc.bNumInterfaces - 1; i >= 0; --i) {
  			struct usb_interface *cintf = config->interface[i];
  			struct usb_driver *drv;
@@ -259,18 +259,18 @@ Index: linux-3.19.8/drivers/usb/core/hub.c
  
  			if (!rebind && cintf->dev.driver) {
  				drv = to_usb_driver(cintf->dev.driver);
-Index: linux-3.19.8/drivers/usb/xen-usbback/Makefile
+Index: linux-3.18.16/drivers/usb/xen-usbback/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/Makefile	2015-06-10 23:58:43.508504761 +0200
++++ linux-3.18.16/drivers/usb/xen-usbback/Makefile	2015-06-19 17:20:51.904749125 +0200
 @@ -0,0 +1,3 @@
 +obj-$(CONFIG_XEN_USBDEV_BACKEND) := usbbk.o
 +
 +usbbk-y	:= usbback.o xenbus.o interface.o vusb.o buffers.o
-Index: linux-3.19.8/drivers/usb/xen-usbback/buffers.c
+Index: linux-3.18.16/drivers/usb/xen-usbback/buffers.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/buffers.c	2015-06-10 23:58:43.591837103 +0200
++++ linux-3.18.16/drivers/usb/xen-usbback/buffers.c	2015-06-19 17:20:51.978081614 +0200
 @@ -0,0 +1,422 @@
 +/******************************************************************************
 + * usbback/buffers.c
@@ -694,11 +694,11 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/buffers.c
 +	}
 +}
 +
-Index: linux-3.19.8/drivers/usb/xen-usbback/common.h
+Index: linux-3.18.16/drivers/usb/xen-usbback/common.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/common.h	2015-06-11 00:35:59.368375903 +0200
-@@ -0,0 +1,356 @@
++++ linux-3.18.16/drivers/usb/xen-usbback/common.h	2015-06-22 12:01:40.018405062 +0200
+@@ -0,0 +1,361 @@
 +/*
 + * Copyright (c) Citrix Systems Inc.
 + *
@@ -807,6 +807,11 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/common.h
 +static inline int usbif_request_get_speed(usbif_request_t *req)
 +{
 +	return (req->type == USBIF_T_GET_SPEED);
++}
++
++static inline int usbif_request_cancel(usbif_request_t *req)
++{
++	return (req->type == USBIF_T_CANCEL);
 +}
 +
 +static inline int usbif_request_type_valid(usbif_request_t *req)
@@ -1055,10 +1060,10 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/common.h
 +void dump(uint8_t *buffer, int len);
 +
 +#endif /* __USBIF__BACKEND__COMMON_H__ */
-Index: linux-3.19.8/drivers/usb/xen-usbback/interface.c
+Index: linux-3.18.16/drivers/usb/xen-usbback/interface.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/interface.c	2015-06-10 23:58:43.745168609 +0200
++++ linux-3.18.16/drivers/usb/xen-usbback/interface.c	2015-06-19 17:20:52.114746705 +0200
 @@ -0,0 +1,164 @@
 +/******************************************************************************
 + *
@@ -1224,11 +1229,11 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/interface.c
 +	usbif_cachep = kmem_cache_create("usbif_cache", sizeof(usbif_t),
 +					 0, 0, NULL);
 +}
-Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
+Index: linux-3.18.16/drivers/usb/xen-usbback/usbback.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/usbback.c	2015-06-11 00:35:44.591885915 +0200
-@@ -0,0 +1,1219 @@
++++ linux-3.18.16/drivers/usb/xen-usbback/usbback.c	2015-06-22 12:02:30.771142355 +0200
+@@ -0,0 +1,1269 @@
 +/******************************************************************************
 + *
 + * Back-end of the driver for virtual block devices. This portion of the
@@ -1237,8 +1242,13 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 + * reference front-end implementation can be found in:
 + *  arch/xen/drivers/blkif/frontend
 + *
++ * Back-end of the driver for PV USB.
++ *
++ * Originally based on blkback:
 + * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
 + * Copyright (c) 2005, Christopher Clark
++ *
++ * PV usbback:
 + * Copyright (c) Citrix Systems Inc.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -1533,7 +1543,8 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +		urb = req->urb;
 +		free_req(req);
 +
-+		/* The urb had its ref count bumped to keep it alive before being queued for
++		/*
++		 * The urb had its ref count bumped to keep it alive before being queued for
 +		 * cleanup in this bottom half routine. Dropping that ref here will likely
 +		 * cleanup and release the urb.
 +		 */
@@ -1613,6 +1624,37 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +	BUG_ON(ret);
 +}
 +
++/*
++ * This is our special version of usb_kill_anchored_urbs. Our routine
++ * is a bit like that one except it is used to snipe a single URB.
++ */
++static void cancel_urb(struct usb_anchor *anchor, u64 cancel_id)
++{
++	struct urb *victim;
++	bool found = false;
++
++	spin_lock_irq(&anchor->lock);
++	list_for_each_entry(victim, &anchor->urb_list, anchor_list) {
++		if (((pending_req_t*)victim->context)->id == cancel_id) {
++			usb_get_urb(victim);
++			found = true;
++			break;
++		}
++	}
++	spin_unlock_irq(&anchor->lock);
++
++	if (!found)
++		return;
++
++	/*
++	 * Now there is an extra ref of the URB. After killing it, drop the ref
++	 * count. The docs say the URB cannot be deleted within the kill call.
++	 * The ref count will prevent the async cleanup part of the completion
++	 * routines from doing this.
++	 */
++	usb_kill_urb(victim);
++	usb_put_urb(victim);
++}
 +
 +/******************************************************************
 + * SCHEDULER FUNCTIONS
@@ -1826,7 +1868,10 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +	cancel_timeout(pending_req);
 +#endif
 +
-+	/* don't need to unanchor, usb_hcd_giveback_urb does it */
++	/*
++	 * Don't need to unanchor, usb_hcd_giveback_urb has already done it
++	 * before calling this completion routine.
++	 */
 +	if ((urb->status != -ENODEV) &&		/* device removed */
 +		(urb->status != -ESHUTDOWN) &&	/* device disabled */
 +		(urb->status != -EPROTO)) { /* timeout or unknown USB error */
@@ -1845,7 +1890,8 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +		urb->start_frame, get_usb_status(status));
 +	usbif_put(pending_req->usbif);
 +
-+	/* Schedule async free as it causes an oops on 32bit kernel doing dma frees in
++	/*
++	 * Schedule async free as it causes an oops on 32bit kernel doing dma frees in
 +	 * this completion handler with irqs disabled (the WARN_ON(irqs_disabled())
 +	 * in dma_free_attrs).  We have to bump the ref count on the urb since it will
 +	 * be released after this completion routine returns. See the code in
@@ -1951,6 +1997,11 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +		} else if (usbif_request_get_speed(&req)) {
 +			make_response(usbif, req.id, 0,
 +				vusb_get_speed(&usbif->vusb), 0);
++			free_req(pending_req);
++		} else if (usbif_request_cancel(&req)) {
++			cancel_urb(&usbif->vusb.anchor, *((u64*)(&req.u.data[0])));
++
++			make_response(usbif, req.id, 0, 0, USBIF_RSP_OKAY);
 +			free_req(pending_req);
 +		} else
 +			dispatch_usb_io(usbif, &req, pending_req);
@@ -2221,7 +2272,7 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +			goto fail_response;
 +		}
 +
-+		if ((err = map_request(pending_req, 0, usbif->domid, req->gref,
++		if ((err = map_request(pending_req, 0, usbif->domid, req->u.gref,
 +				       req->nr_segments,
 +				       !usbif_request_dir_in(req) || indirect,
 +				       0))) {
@@ -2372,8 +2423,12 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +	if (more_to_do)
 +		usbif_notify_work(usbif);
 +
++	/*
++	 * OXT-311 it is unlikely the Xen ring code is broken since it is
++	 * the backbone of PV drivers. This needs investigation and fixing.
++	 */
 +	/* always notify, there seems to be a bug in the Xen ring code */
-+//	if (notify)
++	/*if (notify)*/
 +		notify_remote_via_irq(usbif->irq);
 +}
 +
@@ -2448,10 +2503,10 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/usbback.c
 +module_init(usbif_init);
 +
 +MODULE_LICENSE("Dual BSD/GPL");
-Index: linux-3.19.8/drivers/usb/xen-usbback/vusb.c
+Index: linux-3.18.16/drivers/usb/xen-usbback/vusb.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/vusb.c	2015-06-10 23:58:43.895166823 +0200
++++ linux-3.18.16/drivers/usb/xen-usbback/vusb.c	2015-06-19 17:20:52.264744977 +0200
 @@ -0,0 +1,938 @@
 +/******************************************************************************
 + * usbback/vusb.c
@@ -3391,10 +3446,10 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/vusb.c
 +	}
 +}
 +
-Index: linux-3.19.8/drivers/usb/xen-usbback/xenbus.c
+Index: linux-3.18.16/drivers/usb/xen-usbback/xenbus.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/drivers/usb/xen-usbback/xenbus.c	2015-06-11 00:35:52.158462107 +0200
++++ linux-3.18.16/drivers/usb/xen-usbback/xenbus.c	2015-06-19 17:20:52.368077121 +0200
 @@ -0,0 +1,582 @@
 +/*  Xenbus code for usbif backend
 +    Copyright (C) 2005 Rusty Russell <rusty@rustcorp.com.au>
@@ -3978,10 +4033,10 @@ Index: linux-3.19.8/drivers/usb/xen-usbback/xenbus.c
 +{
 +	return xenbus_register_backend(&usbback_driver);
 +}
-Index: linux-3.19.8/include/linux/dusb.h
+Index: linux-3.18.16/include/linux/dusb.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/include/linux/dusb.h	2015-06-10 23:58:44.038498450 +0200
++++ linux-3.18.16/include/linux/dusb.h	2015-06-19 17:20:52.451409494 +0200
 @@ -0,0 +1,44 @@
 +/*****************************************************************************/
 +
@@ -4027,11 +4082,11 @@ Index: linux-3.19.8/include/linux/dusb.h
 +extern void usb_device_reenumerate(struct usb_device *udev);
 +
 +#endif
-Index: linux-3.19.8/include/xen/interface/io/usbif.h
+Index: linux-3.18.16/include/xen/interface/io/usbif.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/include/xen/interface/io/usbif.h	2015-06-10 23:58:44.148497140 +0200
-@@ -0,0 +1,191 @@
++++ linux-3.18.16/include/xen/interface/io/usbif.h	2015-06-22 12:04:41.552939121 +0200
+@@ -0,0 +1,196 @@
 +/******************************************************************************
 + * usbif.h
 + *
@@ -4094,14 +4149,16 @@ Index: linux-3.19.8/include/xen/interface/io/usbif.h
 +#define USBIF_T_ABORT_PIPE	5
 +#define USBIF_T_GET_FRAME	6
 +#define USBIF_T_GET_SPEED	7
++#define USBIF_T_CANCEL		8
 +
-+#define USBIF_T_MAX		(USBIF_T_GET_SPEED)
++#define USBIF_T_MAX		(USBIF_T_CANCEL)
 +
 +#define USBIF_F_SHORTOK		0x01
 +#define USBIF_F_RESET		0x02
-+#define USBIF_F_ASAP		0x04 // start ISO request on next available frame
-+#define USBIF_F_INDIRECT	0x08 // this request contains indirect segments
-+#define USBIF_F_CYCLE_PORT	0x10 // force re-enumeration of this device
++#define USBIF_F_ASAP		0x04 /* start ISO request on next available frame */
++#define USBIF_F_INDIRECT	0x08 /* this request contains indirect segments */
++#define USBIF_F_CYCLE_PORT	0x10 /* force re-enumeration of this device */
++#define USBIF_F_DIRECT_DATA	0x20 /* request contains data directly inline */
 +
 +/*
 + * Maximum scatter/gather segments per request.
@@ -4124,7 +4181,10 @@ Index: linux-3.19.8/include/xen/interface/io/usbif.h
 +    uint8_t             flags;
 +    uint16_t            nr_packets;   /* number of ISO packets */
 +    uint32_t            startframe;
-+    grant_ref_t         gref[USBIF_MAX_SEGMENTS_PER_REQUEST];
++    union {
++        grant_ref_t     gref[USBIF_MAX_SEGMENTS_PER_REQUEST];
++        uint8_t         data[sizeof(grant_ref_t)*USBIF_MAX_SEGMENTS_PER_REQUEST];
++    } u;
 +    uint32_t            pad;
 +};
 +typedef struct usbif_request usbif_request_t;
@@ -4223,10 +4283,10 @@ Index: linux-3.19.8/include/xen/interface/io/usbif.h
 + * indent-tabs-mode: nil
 + * End:
 + */
-Index: linux-3.19.8/include/xen/vusb.h
+Index: linux-3.18.16/include/xen/vusb.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.19.8/include/xen/vusb.h	2015-06-10 23:58:44.275162298 +0200
++++ linux-3.18.16/include/xen/vusb.h	2015-06-19 17:20:52.704739910 +0200
 @@ -0,0 +1,56 @@
 +#ifndef __XEN_VUSB_H__
 +#define __XEN_VUSB_H__
@@ -4284,10 +4344,10 @@ Index: linux-3.19.8/include/xen/vusb.h
 +}
 +
 +#endif /* __XEN_VUSB_H__ */
-Index: linux-3.19.8/drivers/scsi/sr.c
+Index: linux-3.18.16/drivers/scsi/sr.c
 ===================================================================
---- linux-3.19.8.orig/drivers/scsi/sr.c	2015-06-10 23:39:34.768766016 +0200
-+++ linux-3.19.8/drivers/scsi/sr.c	2015-06-10 23:58:44.351828052 +0200
+--- linux-3.18.16.orig/drivers/scsi/sr.c	2015-06-19 17:19:31.272344396 +0200
++++ linux-3.18.16/drivers/scsi/sr.c	2015-06-19 17:20:52.788072283 +0200
 @@ -264,6 +264,15 @@
  	if (!(clearing & DISK_EVENT_MEDIA_CHANGE))
  		return events;
@@ -4325,10 +4385,10 @@ Index: linux-3.19.8/drivers/scsi/sr.c
  
  	if (cd->device->changed) {
  		events |= DISK_EVENT_MEDIA_CHANGE;
-Index: linux-3.19.8/drivers/usb/host/xhci-pci.c
+Index: linux-3.18.16/drivers/usb/host/xhci-pci.c
 ===================================================================
---- linux-3.19.8.orig/drivers/usb/host/xhci-pci.c	2015-06-10 23:39:34.802098958 +0200
-+++ linux-3.19.8/drivers/usb/host/xhci-pci.c	2015-06-10 23:58:44.495159678 +0200
+--- linux-3.18.16.orig/drivers/usb/host/xhci-pci.c	2015-06-19 17:19:31.302344050 +0200
++++ linux-3.18.16/drivers/usb/host/xhci-pci.c	2015-06-19 17:20:52.948070440 +0200
 @@ -142,6 +142,7 @@
  		 pdev->device == PCI_DEVICE_ID_INTEL_CHERRYVIEW_XHCI)) {
  		xhci->quirks |= XHCI_PME_STUCK_QUIRK;

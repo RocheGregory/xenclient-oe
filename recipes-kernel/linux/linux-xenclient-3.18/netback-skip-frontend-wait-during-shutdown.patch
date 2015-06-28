@@ -1,7 +1,7 @@
-Index: linux-3.19.8/drivers/xen/xenbus/xenbus_probe_backend.c
+Index: linux-3.18.16/drivers/xen/xenbus/xenbus_probe_backend.c
 ===================================================================
---- linux-3.19.8.orig/drivers/xen/xenbus/xenbus_probe_backend.c	2015-06-10 18:22:25.249649327 +0200
-+++ linux-3.19.8/drivers/xen/xenbus/xenbus_probe_backend.c	2015-06-10 18:57:15.021924137 +0200
+--- linux-3.18.16.orig/drivers/xen/xenbus/xenbus_probe_backend.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/xen/xenbus/xenbus_probe_backend.c	2015-06-19 15:19:05.646273925 +0200
 @@ -187,6 +187,19 @@
  	xenbus_otherend_changed(watch, vec, len, 0);
  }
@@ -31,10 +31,10 @@ Index: linux-3.19.8/drivers/xen/xenbus/xenbus_probe_backend.c
  		.dev_groups	= xenbus_dev_groups,
  	},
  };
-Index: linux-3.19.8/drivers/xen/xenbus/xenbus_probe.h
+Index: linux-3.18.16/drivers/xen/xenbus/xenbus_probe.h
 ===================================================================
---- linux-3.19.8.orig/drivers/xen/xenbus/xenbus_probe.h	2015-06-10 18:22:25.266315796 +0200
-+++ linux-3.19.8/drivers/xen/xenbus/xenbus_probe.h	2015-06-10 23:33:27.816409481 +0200
+--- linux-3.18.16.orig/drivers/xen/xenbus/xenbus_probe.h	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/xen/xenbus/xenbus_probe.h	2015-06-19 15:19:05.816271942 +0200
 @@ -85,4 +85,11 @@
  
  void xenbus_ring_ops_init(void);

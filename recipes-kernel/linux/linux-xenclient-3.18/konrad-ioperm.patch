@@ -1,7 +1,7 @@
-Index: linux-3.19.8/arch/x86/include/asm/paravirt.h
+Index: linux-3.18.16/arch/x86/include/asm/paravirt.h
 ===================================================================
---- linux-3.19.8.orig/arch/x86/include/asm/paravirt.h	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/include/asm/paravirt.h	2015-06-10 17:33:45.514556535 +0200
+--- linux-3.18.16.orig/arch/x86/include/asm/paravirt.h	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/include/asm/paravirt.h	2015-06-19 15:19:09.676226868 +0200
 @@ -299,11 +299,18 @@
  {
  	PVOP_VCALL3(pv_cpu_ops.write_idt_entry, dt, entry, g);
@@ -21,10 +21,10 @@ Index: linux-3.19.8/arch/x86/include/asm/paravirt.h
  /* The paravirtualized I/O functions */
  static inline void slow_down_io(void)
  {
-Index: linux-3.19.8/arch/x86/include/asm/paravirt_types.h
+Index: linux-3.18.16/arch/x86/include/asm/paravirt_types.h
 ===================================================================
---- linux-3.19.8.orig/arch/x86/include/asm/paravirt_types.h	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/include/asm/paravirt_types.h	2015-06-10 17:33:45.514556535 +0200
+--- linux-3.18.16.orig/arch/x86/include/asm/paravirt_types.h	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/include/asm/paravirt_types.h	2015-06-19 15:19:09.852891479 +0200
 @@ -143,6 +143,8 @@
  	void (*load_sp0)(struct tss_struct *tss, struct thread_struct *t);
  
@@ -34,11 +34,11 @@ Index: linux-3.19.8/arch/x86/include/asm/paravirt_types.h
  
  	void (*wbinvd)(void);
  	void (*io_delay)(void);
-Index: linux-3.19.8/arch/x86/include/asm/processor.h
+Index: linux-3.18.16/arch/x86/include/asm/processor.h
 ===================================================================
---- linux-3.19.8.orig/arch/x86/include/asm/processor.h	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/include/asm/processor.h	2015-06-10 17:33:45.514556535 +0200
-@@ -544,6 +544,9 @@
+--- linux-3.18.16.orig/arch/x86/include/asm/processor.h	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/include/asm/processor.h	2015-06-19 15:19:09.952890313 +0200
+@@ -543,6 +543,9 @@
  #endif
  }
  
@@ -48,7 +48,7 @@ Index: linux-3.19.8/arch/x86/include/asm/processor.h
  static inline void
  native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
  {
-@@ -576,7 +579,16 @@
+@@ -575,7 +578,16 @@
  	native_load_sp0(tss, thread);
  }
  
@@ -66,10 +66,10 @@ Index: linux-3.19.8/arch/x86/include/asm/processor.h
  #endif /* CONFIG_PARAVIRT */
  
  /*
-Index: linux-3.19.8/arch/x86/kernel/ioport.c
+Index: linux-3.18.16/arch/x86/kernel/ioport.c
 ===================================================================
---- linux-3.19.8.orig/arch/x86/kernel/ioport.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/kernel/ioport.c	2015-06-10 17:49:22.596690318 +0200
+--- linux-3.18.16.orig/arch/x86/kernel/ioport.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/kernel/ioport.c	2015-06-19 15:19:10.056222439 +0200
 @@ -17,13 +17,29 @@
  #include <linux/bitmap.h>
  #include <asm/syscalls.h>
@@ -131,10 +131,10 @@ Index: linux-3.19.8/arch/x86/kernel/ioport.c
  
  	return 0;
  }
-Index: linux-3.19.8/arch/x86/kernel/paravirt.c
+Index: linux-3.18.16/arch/x86/kernel/paravirt.c
 ===================================================================
---- linux-3.19.8.orig/arch/x86/kernel/paravirt.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/kernel/paravirt.c	2015-06-10 17:33:45.514556535 +0200
+--- linux-3.18.16.orig/arch/x86/kernel/paravirt.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/kernel/paravirt.c	2015-06-19 15:19:10.172887744 +0200
 @@ -384,6 +384,7 @@
  	.swapgs = native_swapgs,
  
@@ -143,10 +143,10 @@ Index: linux-3.19.8/arch/x86/kernel/paravirt.c
  	.io_delay = native_io_delay,
  
  	.start_context_switch = paravirt_nop,
-Index: linux-3.19.8/arch/x86/kernel/process.c
+Index: linux-3.18.16/arch/x86/kernel/process.c
 ===================================================================
---- linux-3.19.8.orig/arch/x86/kernel/process.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/kernel/process.c	2015-06-10 17:33:45.514556535 +0200
+--- linux-3.18.16.orig/arch/x86/kernel/process.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/arch/x86/kernel/process.c	2015-06-19 15:19:10.276219870 +0200
 @@ -109,16 +109,12 @@
  	unsigned long *bp = t->io_bitmap_ptr;
  
@@ -192,11 +192,11 @@ Index: linux-3.19.8/arch/x86/kernel/process.c
  	propagate_user_return_notify(prev_p, next_p);
  }
  
-Index: linux-3.19.8/arch/x86/xen/enlighten.c
+Index: linux-3.18.16/arch/x86/xen/enlighten.c
 ===================================================================
---- linux-3.19.8.orig/arch/x86/xen/enlighten.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/arch/x86/xen/enlighten.c	2015-06-10 17:33:45.517889828 +0200
-@@ -923,6 +923,18 @@
+--- linux-3.18.16.orig/arch/x86/xen/enlighten.c	2015-06-19 15:13:51.566605307 +0200
++++ linux-3.18.16/arch/x86/xen/enlighten.c	2015-06-19 15:19:10.369552114 +0200
+@@ -921,6 +921,18 @@
  	HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl);
  }
  
@@ -215,7 +215,7 @@ Index: linux-3.19.8/arch/x86/xen/enlighten.c
  static void xen_io_delay(void)
  {
  }
-@@ -1276,6 +1288,7 @@
+@@ -1274,6 +1286,7 @@
  	.load_sp0 = xen_load_sp0,
  
  	.set_iopl_mask = xen_set_iopl_mask,

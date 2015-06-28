@@ -1,8 +1,8 @@
-Index: linux-3.19.8/drivers/pci/pci.c
+Index: linux-3.18.16/drivers/pci/pci.c
 ===================================================================
---- linux-3.19.8.orig/drivers/pci/pci.c	2015-05-11 14:34:10.000000000 +0200
-+++ linux-3.19.8/drivers/pci/pci.c	2015-06-08 14:34:28.996214792 +0200
-@@ -4295,6 +4295,27 @@
+--- linux-3.18.16.orig/drivers/pci/pci.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/pci/pci.c	2015-06-19 15:19:03.236302064 +0200
+@@ -4303,6 +4303,27 @@
  static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE] = {0};
  static DEFINE_SPINLOCK(resource_alignment_lock);
  
@@ -30,7 +30,7 @@ Index: linux-3.19.8/drivers/pci/pci.c
  /**
   * pci_specified_resource_alignment - get resource alignment specified by user.
   * @dev: the PCI device to get
-@@ -4347,6 +4368,8 @@
+@@ -4355,6 +4376,8 @@
  		}
  		p++;
  	}

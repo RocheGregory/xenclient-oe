@@ -1,10 +1,10 @@
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index b23fe37..0f07a50 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -357,6 +357,15 @@ config ACPI_BGRT
- 	  data from the firmware boot splash. It will appear under
- 	  /sys/firmware/acpi/bgrt/ .
+Index: linux-3.18.16/drivers/acpi/Kconfig
+===================================================================
+--- linux-3.18.16.orig/drivers/acpi/Kconfig	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/acpi/Kconfig	2015-06-19 17:10:44.341741192 +0200
+@@ -370,6 +370,14 @@
+ 
+ 	If you are unsure what to do, do not enable this option.
  
 +config XEN_ACPI_WMI
 +        tristate "XEN WMI"
@@ -14,25 +14,25 @@ index b23fe37..0f07a50 100644
 +	  This driver adds support for the ACPI-WMI (Windows Management
 +	  Instrumentation) mapper device (PNP0C14) under Xen.
 +
-+
- config ACPI_REDUCED_HARDWARE_ONLY
- 	bool "Hardware-reduced ACPI support only" if EXPERT
- 	def_bool n
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index c3b2fcb..bc13bc6 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -87,3 +87,5 @@ obj-$(CONFIG_ACPI_PROCESSOR_AGGREGATOR) += acpi_pad.o
+ source "drivers/acpi/apei/Kconfig"
+ 
+ config ACPI_EXTLOG
+Index: linux-3.18.16/drivers/acpi/Makefile
+===================================================================
+--- linux-3.18.16.orig/drivers/acpi/Makefile	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/acpi/Makefile	2015-06-19 17:20:32.828302177 +0200
+@@ -87,3 +87,6 @@
  obj-$(CONFIG_ACPI_APEI)		+= apei/
  
  obj-$(CONFIG_ACPI_EXTLOG)	+= acpi_extlog.o
 +
 +obj-$(CONFIG_XEN_ACPI_WMI)      += xen-wmi.o
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 5f9b74b..1f96856 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -128,6 +128,14 @@ static int EC_FLAGS_SKIP_DSDT_SCAN; /* Not all BIOS survive early DSDT scan */
++
+Index: linux-3.18.16/drivers/acpi/ec.c
+===================================================================
+--- linux-3.18.16.orig/drivers/acpi/ec.c	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/acpi/ec.c	2015-06-19 17:10:44.341741192 +0200
+@@ -128,6 +128,14 @@
  static int EC_FLAGS_CLEAR_ON_RESUME; /* Needs acpi_ec_clear() on boot/resume */
  static int EC_FLAGS_QUERY_HANDSHAKE; /* Needs QR_EC issued when SCI_EVT set */
  
@@ -47,7 +47,7 @@ index 5f9b74b..1f96856 100644
  /* --------------------------------------------------------------------------
   *                           Transaction Management
   * -------------------------------------------------------------------------- */
-@@ -422,6 +430,23 @@ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 *data)
+@@ -422,6 +430,23 @@
  
  	result = acpi_ec_transaction(ec, &t);
  	*data = d;
@@ -71,12 +71,11 @@ index 5f9b74b..1f96856 100644
  	return result;
  }
  
-diff --git a/drivers/acpi/xen-wmi.c b/drivers/acpi/xen-wmi.c
-new file mode 100644
-index 0000000..cd0a7ba
---- /dev/null
-+++ b/drivers/acpi/xen-wmi.c
-@@ -0,0 +1,1161 @@
+Index: linux-3.18.16/drivers/acpi/xen-wmi.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.18.16/drivers/acpi/xen-wmi.c	2015-06-19 17:10:44.345074486 +0200
+@@ -0,0 +1,1160 @@
 +/*
 + *  ACPI-WMI mapping driver
 + *
@@ -88,7 +87,7 @@ index 0000000..cd0a7ba
 + *
 + *  Following modifications where made to fit our usecase -
 + *  a) Route WMI events to acpid.
-+ *  b) Remove exports not required for our usecase, remove notification 
++ *  b) Remove exports not required for our usecase, remove notification
 + *     installation/uninstallation code (as we now route events to acpid).
 + *  c) Minor device id issue.
 + *  d) Remove GUID parsing code as our usecase does not require supporting
@@ -159,14 +158,14 @@ index 0000000..cd0a7ba
 +static struct wmi_block wmi_blocks;
 +static DEFINE_MUTEX(wmi_mutex);
 +
-+/* 
++/*
 + * YIKEES!  HACK ALERT
 + * Due to buffer dereferencing bugs at firmware layer, some firmware(s)
 + * (Dell in specific) return all 0s for wmi event data when
 + * queried through _WED.  To work around this firmware bug and provide
 + * appropriate event data to guest firmware, we will sniff the embedded
 + * controller port access to addresses 0x2b and 0x2c and slap that data
-+ * at the beginning of _WED return buffer which would otherwise be all 0s. 
++ * at the beginning of _WED return buffer which would otherwise be all 0s.
 + */
 +static u8 enable_wmi_event_data_hack = FALSE;
 +u8 in_query_wmi_event_data = FALSE;
@@ -183,7 +182,7 @@ index 0000000..cd0a7ba
 +#define ACPI_WMI_STRING      0x4	/* GUID takes & returns a string */
 +#define ACPI_WMI_EVENT       0x8	/* GUID is an event */
 +
-+static int acpi_wmi_remove(struct acpi_device *device, int type);
++static int acpi_wmi_remove(struct acpi_device *device);
 +static int acpi_wmi_add(struct acpi_device *device);
 +static const struct acpi_device_id wmi_device_ids[] = {
 +        {"PNP0C14", 0},
@@ -198,67 +197,67 @@ index 0000000..cd0a7ba
 +	.ids = wmi_device_ids,
 +	.ops = {
 +		.add = acpi_wmi_add,
-+		.remove = acpi_wmi_remove,
-+		},
++                .remove = acpi_wmi_remove,
++        },
 +};
 +
 +static bool wmi_find_guid(const char *guid_string, const char *objid,
-+u32 wmiid, struct wmi_block **out)
++        u32 wmiid, struct wmi_block **out)
 +{
-+	struct wmi_block *wblock;
-+	struct wmi_device *wparent;
-+	struct guid_block *gblock;
-+	struct list_head *p;
++    struct wmi_block *wblock;
++    struct wmi_device *wparent;
++    struct guid_block *gblock;
++    struct list_head *p;
 +
-+	list_for_each(p, &wmi_blocks.list) {
-+		wblock = list_entry(p, struct wmi_block, list);
-+		wparent = wblock->wparent;
-+		gblock = &wblock->gblock;
++    list_for_each(p, &wmi_blocks.list) {
++        wblock = list_entry(p, struct wmi_block, list);
++        wparent = wblock->wparent;
++        gblock = &wblock->gblock;
 +
-+		if (memcmp(gblock->guid, guid_string, 16) == 0) {
-+			if (objid) {
-+				if ((objid[0] == gblock->object_id[0]) &&
-+					(objid[1] == gblock->object_id[1])) {
-+					if (out)
-+						*out = wblock;
-+					return 1;
-+				}
-+			}
-+			else if (wmiid != WMIID_INVALID) {
-+				if (wmiid == wparent->wmiid) {
-+					if (out)
-+						*out = wblock;
-+					return 1;
-+				}
-+			}
-+			else {
-+				if (out)
-+					*out = wblock;
-+				return 1;
-+			}
-+		}
-+	}
-+	return 0;
++        if (memcmp(gblock->guid, guid_string, 16) == 0) {
++            if (objid) {
++                if ((objid[0] == gblock->object_id[0]) &&
++                        (objid[1] == gblock->object_id[1])) {
++                    if (out)
++                        *out = wblock;
++                    return 1;
++                }
++            }
++            else if (wmiid != WMIID_INVALID) {
++                if (wmiid == wparent->wmiid) {
++                    if (out)
++                        *out = wblock;
++                    return 1;
++                }
++            }
++            else {
++                if (out)
++                    *out = wblock;
++                return 1;
++            }
++        }
++    }
++    return 0;
 +}
 +
 +static bool wmi_find_event_guid(u32 event,
-+u32 wmiid, struct wmi_block **out)
++        u32 wmiid, struct wmi_block **out)
 +{
-+	struct wmi_block *wblock;
-+	struct wmi_device *wparent;
-+	struct guid_block *gblock;
-+	struct list_head *p;
++    struct wmi_block *wblock;
++    struct wmi_device *wparent;
++    struct guid_block *gblock;
++    struct list_head *p;
 +
-+	list_for_each(p, &wmi_blocks.list) {
-+		wblock = list_entry(p, struct wmi_block, list);
-+		wparent = wblock->wparent;
-+		gblock = &wblock->gblock;
++    list_for_each(p, &wmi_blocks.list) {
++        wblock = list_entry(p, struct wmi_block, list);
++        wparent = wblock->wparent;
++        gblock = &wblock->gblock;
 +
-+		if ((gblock->flags & ACPI_WMI_EVENT) && (gblock->notify_id == event)) {
-+			if (wmiid != WMIID_INVALID) {
-+				if (wmiid == wparent->wmiid) {
-+					if (out)
-+						*out = wblock;
++        if ((gblock->flags & ACPI_WMI_EVENT) && (gblock->notify_id == event)) {
++            if (wmiid != WMIID_INVALID) {
++                if (wmiid == wparent->wmiid) {
++                    if (out)
++                        *out = wblock;
 +					return 1;
 +				}
 +			}
@@ -290,7 +289,7 @@ index 0000000..cd0a7ba
 +
 +static acpi_status wmi_enable_event_data_blocks(int enable)
 +{
-+	struct list_head *p;	
++	struct list_head *p;
 +	struct wmi_block *wblock;
 +	struct wmi_device *wparent;
 +	struct guid_block *gblock;
@@ -302,7 +301,7 @@ index 0000000..cd0a7ba
 +	list_for_each(p, &wmi_blocks.list) {
 +		wblock = list_entry(p, struct wmi_block, list);
 +		wparent = wblock->wparent;
-+		gblock = &wblock->gblock;		
++		gblock = &wblock->gblock;
 +
 +		if (gblock->flags & ACPI_WMI_EVENT) {
 +			input.count = 1;
@@ -316,7 +315,7 @@ index 0000000..cd0a7ba
 +			if (status != AE_OK && status != AE_NOT_FOUND) {
 +				printk(KERN_INFO PREFIX "Event block %s enable failed\n", method);
 +				return status;
-+			} else 
++			} else
 +				return AE_OK;
 +		}
 +	}
@@ -394,7 +393,7 @@ index 0000000..cd0a7ba
 + */
 +acpi_status wmi_evaluate_method(const char *guid_string, u8 instance,
 +u32 method_id, const struct acpi_buffer *in, struct acpi_buffer *out)
-+{	
++{
 +	struct wmi_block *wblock = NULL;
 +
 +	if (!guid_string)
@@ -421,7 +420,7 @@ index 0000000..cd0a7ba
 + */
 +acpi_status wmi_evaluate_method_objid(const char *guid_string, u8 instance,
 +u32 method_id, const char *objid, const struct acpi_buffer *in, struct acpi_buffer *out)
-+{	
++{
 +	struct wmi_block *wblock = NULL;
 +
 +	if (!guid_string || !objid)
@@ -448,7 +447,7 @@ index 0000000..cd0a7ba
 + */
 +acpi_status wmi_evaluate_method_wmiid(const char *guid_string, u8 instance,
 +u32 method_id, u32 wmiid, const struct acpi_buffer *in, struct acpi_buffer *out)
-+{	
++{
 +	struct wmi_block *wblock = NULL;
 +
 +	if (!guid_string || (wmiid == WMIID_INVALID))
@@ -463,7 +462,7 @@ index 0000000..cd0a7ba
 +
 +/**
 + * wmi_query_block_internal - Internal helper to return contents of a WMI block
-+ * @wblock: WMI info block associated with the data block to query 
++ * @wblock: WMI info block associated with the data block to query
 + * @instance: Instance index
 + * &out: Empty buffer to return the contents of the data block to
 + *
@@ -536,7 +535,7 @@ index 0000000..cd0a7ba
 +
 +/**
 + * wmi_query_block - Return contents of a WMI block
-+ * @guid_string: 16 byte guid 
++ * @guid_string: 16 byte guid
 + * @instance: Instance index
 + * &out: Empty buffer to return the contents of the data block to
 + *
@@ -560,7 +559,7 @@ index 0000000..cd0a7ba
 +/**
 + * wmi_query_block_objid - Return contents of a WMI block using an
 + * object id e.g. when there is more than one instance of a given guid.
-+ * @guid_string: 16 byte guid 
++ * @guid_string: 16 byte guid
 + * @instance: Instance index
 + * @objid: WMI object id
 + * &out: Empty buffer to return the contents of the data block to
@@ -589,7 +588,7 @@ index 0000000..cd0a7ba
 + * wmi_query_block_wmiid - Return contents of a WMI block using an internal
 + * WMI device id e.g. when there is more than one WMI device present. Use
 + * wmi_get_wmi_devices() to get a list of WMI devices.
-+ * @guid_string: 16 byte guid 
++ * @guid_string: 16 byte guid
 + * @instance: Instance index
 + * @wmiid: WMI internal device id
 + * &out: Empty buffer to return the contents of the data block to
@@ -613,7 +612,7 @@ index 0000000..cd0a7ba
 +
 +/**
 + * wmi_set_block_internal - Internal helper to write to a WMI block
-+ * @wblock: WMI info block associated with the data block to set 
++ * @wblock: WMI info block associated with the data block to set
 + * @instance: Instance index
 + * &in: Buffer containing new values for the data block
 + *
@@ -658,7 +657,7 @@ index 0000000..cd0a7ba
 +
 +/**
 + * wmi_set_block - Write to a WMI block
-+ * @guid_string: 16 byte guid 
++ * @guid_string: 16 byte guid
 + * @instance: Instance index
 + * &in: Buffer containing new values for the data block
 + *
@@ -666,7 +665,7 @@ index 0000000..cd0a7ba
 + */
 +acpi_status wmi_set_block(const char *guid_string, u8 instance,
 +const struct acpi_buffer *in)
-+{	
++{
 +	struct wmi_block *wblock = NULL;
 +
 +	if (!guid_string || !in)
@@ -682,7 +681,7 @@ index 0000000..cd0a7ba
 +/**
 + * wmi_set_block_objid - Write contents of a WMI block using an
 + * object id e.g. when there is more than one instance of a given guid.
-+ * @guid_string: 16 byte guid 
++ * @guid_string: 16 byte guid
 + * @instance: Instance index
 + * @objid: WMI object id
 + * &in: Buffer containing new values for the data block
@@ -691,7 +690,7 @@ index 0000000..cd0a7ba
 + */
 +acpi_status wmi_set_block_objid(const char *guid_string, u8 instance,
 +const char *objid, const struct acpi_buffer *in)
-+{	
++{
 +	struct wmi_block *wblock = NULL;
 +
 +	if (!guid_string || !objid || !in)
@@ -711,7 +710,7 @@ index 0000000..cd0a7ba
 + * wmi_set_block_wmiid - Write contents of a WMI block using an internal
 + * WMI device id e.g. when there is more than one WMI device present. Use
 + * wmi_get_wmi_devices() to get a list of WMI devices.
-+ * @guid_string: 16 byte guid 
++ * @guid_string: 16 byte guid
 + * @instance: Instance index
 + * @wmiid: WMI internal device id
 + * &in: Buffer containing new values for the data block
@@ -720,7 +719,7 @@ index 0000000..cd0a7ba
 + */
 +acpi_status wmi_set_block_wmiid(const char *guid_string, u8 instance,
 +u32 wmiid, const struct acpi_buffer *in)
-+{	
++{
 +	struct wmi_block *wblock = NULL;
 +
 +	if (!guid_string || !in || wmiid == WMIID_INVALID)
@@ -736,7 +735,7 @@ index 0000000..cd0a7ba
 +/**
 + * wmi_get_event_data_inernal - Internal helper to get WMI data associated
 + * with an event.
-+ * @wblock: WMI info block associated with the event 
++ * @wblock: WMI info block associated with the event
 + * @event: Event to find
 + * &out: Buffer to hold event data
 + *
@@ -747,7 +746,7 @@ index 0000000..cd0a7ba
 +{
 +	struct acpi_object_list input;
 +	union acpi_object params[1];
-+	acpi_handle handle;	
++	acpi_handle handle;
 +	acpi_status status;
 +	uint count;
 +
@@ -760,14 +759,14 @@ index 0000000..cd0a7ba
 +	mutex_lock(&wmi_mutex);
 +	if ( enable_wmi_event_data_hack == TRUE ) {
 +		wmi_ec_port_data_size = 0;
-+		memset(wmi_ec_port_data, 0, 32); 
++		memset(wmi_ec_port_data, 0, 32);
 +		in_query_wmi_event_data = TRUE;
 +	}
 +
 +	status = acpi_evaluate_object(handle, "_WED", &input, out);
 +	if ( enable_wmi_event_data_hack == TRUE ) {
 +		for ( count = 0; count < wmi_ec_port_data_size; count++) {
-+			((char *)((union acpi_object *)out->pointer)->buffer.pointer)[count] 
++			((char *)((union acpi_object *)out->pointer)->buffer.pointer)[count]
 +					= wmi_ec_port_data[count];
 +		}
 +		in_query_wmi_event_data = FALSE;
@@ -800,7 +799,7 @@ index 0000000..cd0a7ba
 +
 +/**
 + * wmi_get_event_data_wmiid - Get WMI data associated with an event
-+ * using an internal WMI device id e.g. when there is more than one 
++ * using an internal WMI device id e.g. when there is more than one
 + * WMI device present. Use wmi_get_wmi_devices() to get a list of WMI devices.
 + * @event: Event to find
 + * @wmiid: WMI internal device id
@@ -863,8 +862,8 @@ index 0000000..cd0a7ba
 +EXPORT_SYMBOL_GPL(wmi_get_wmi_devices);
 +
 +/**
-+ * wmi_get_device_blocks_count - Get a count of WMI guid blocks associated 
-+ * with a specific WMI device. Use wmi_get_wmi_devices() to get  a list of 
++ * wmi_get_device_blocks_count - Get a count of WMI guid blocks associated
++ * with a specific WMI device. Use wmi_get_wmi_devices() to get  a list of
 + * WMI devices.
 + *
 + * &out - Buffer to hold guid block count
@@ -888,8 +887,8 @@ index 0000000..cd0a7ba
 +EXPORT_SYMBOL_GPL(wmi_get_device_blocks_count);
 +
 +/**
-+ * wmi_get_device_blocks - Get WMI guid blocks associated  with a 
-+ * specific WMI device. Use wmi_get_wmi_devices() to get  a list of 
++ * wmi_get_device_blocks - Get WMI guid blocks associated  with a
++ * specific WMI device. Use wmi_get_wmi_devices() to get  a list of
 + * WMI devices. Out buffer contains a list of struct guid_block entries.
 + *
 + * &out - Buffer to hold guid block list
@@ -1113,7 +1112,7 @@ index 0000000..cd0a7ba
 +}
 +
 +static void acpi_wmi_notify(acpi_handle handle, u32 event, void *data)
-+{	
++{
 +	struct wmi_block *wblock;
 +	struct guid_block *gblock;
 +	struct list_head *p;
@@ -1125,7 +1124,6 @@ index 0000000..cd0a7ba
 +
 +		if ((gblock->flags & ACPI_WMI_EVENT) &&
 +			(gblock->notify_id == event)) {
-+			// acpi_bus_generate_proc_event(device, event, 0);
 +			acpi_bus_generate_netlink_event(device->pnp.device_class,
 +                                                        dev_name(&device->dev),
 +                                                        event, 0);
@@ -1134,7 +1132,7 @@ index 0000000..cd0a7ba
 +	}
 +}
 +
-+static int acpi_wmi_remove(struct acpi_device *device, int type)
++static int acpi_wmi_remove(struct acpi_device *device)
 +{
 +	acpi_remove_notify_handler(device->handle, ACPI_DEVICE_NOTIFY,
 +		acpi_wmi_notify);
@@ -1202,12 +1200,12 @@ index 0000000..cd0a7ba
 +	}
 +
 +	dmi_sys_info = dmi_get_system_info(DMI_SYS_VENDOR);
-+	if (dmi_sys_info == NULL) 
++	if (dmi_sys_info == NULL)
 +		return result;
 +
-+	if (strstr(dmi_sys_info, "Dell") != NULL) 
++	if (strstr(dmi_sys_info, "Dell") != NULL)
 +		enable_wmi_event_data_hack = TRUE;
-+         
++
 +	return result;
 +}
 +
@@ -1238,11 +1236,11 @@ index 0000000..cd0a7ba
 +
 +module_init(acpi_wmi_init);
 +module_exit(acpi_wmi_exit);
-diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
-index b812462..6c25a2b 100644
---- a/drivers/xen/Kconfig
-+++ b/drivers/xen/Kconfig
-@@ -253,4 +253,11 @@ config XEN_EFI
+Index: linux-3.18.16/drivers/xen/Kconfig
+===================================================================
+--- linux-3.18.16.orig/drivers/xen/Kconfig	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/xen/Kconfig	2015-06-19 17:19:40.928899869 +0200
+@@ -253,4 +253,11 @@
  	def_bool y
  	depends on X86_64 && EFI
  
@@ -1254,35 +1252,33 @@ index b812462..6c25a2b 100644
 +          guest space.
 +
  endmenu
-diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index 2140398..030d475 100644
---- a/drivers/xen/Makefile
-+++ b/drivers/xen/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_XEN_ACPI_HOTPLUG_CPU)	+= xen-acpi-cpuhotplug.o
+Index: linux-3.18.16/drivers/xen/Makefile
+===================================================================
+--- linux-3.18.16.orig/drivers/xen/Makefile	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/drivers/xen/Makefile	2015-06-19 17:10:44.345074486 +0200
+@@ -35,6 +35,7 @@
+ obj-$(CONFIG_XEN_ACPI_HOTPLUG_MEMORY)	+= xen-acpi-memhotplug.o
+ obj-$(CONFIG_XEN_ACPI_HOTPLUG_CPU)	+= xen-acpi-cpuhotplug.o
  obj-$(CONFIG_XEN_ACPI_PROCESSOR)	+= xen-acpi-processor.o
++obj-$(CONFIG_XEN_ACPI_WMI_WRAPPER)	+= acpi-wmi/
  obj-$(CONFIG_XEN_EFI)			+= efi.o
  obj-$(CONFIG_XEN_SCSI_BACKEND)		+= xen-scsiback.o
-+obj-$(CONFIG_XEN_ACPI_WMI_WRAPPER)	+= acpi-wmi/
  xen-evtchn-y				:= evtchn.o
- xen-gntdev-y				:= gntdev.o
- xen-gntalloc-y				:= gntalloc.o
-diff --git a/drivers/xen/acpi-wmi/Makefile b/drivers/xen/acpi-wmi/Makefile
-new file mode 100644
-index 0000000..afe5d9d
---- /dev/null
-+++ b/drivers/xen/acpi-wmi/Makefile
+Index: linux-3.18.16/drivers/xen/acpi-wmi/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.18.16/drivers/xen/acpi-wmi/Makefile	2015-06-19 17:10:44.345074486 +0200
 @@ -0,0 +1,2 @@
 +
 +obj-y := acpi-wmi.o
-diff --git a/drivers/xen/acpi-wmi/acpi-wmi.c b/drivers/xen/acpi-wmi/acpi-wmi.c
-new file mode 100644
-index 0000000..feb2bc2
---- /dev/null
-+++ b/drivers/xen/acpi-wmi/acpi-wmi.c
+Index: linux-3.18.16/drivers/xen/acpi-wmi/acpi-wmi.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.18.16/drivers/xen/acpi-wmi/acpi-wmi.c	2015-06-19 17:10:44.345074486 +0200
 @@ -0,0 +1,619 @@
 +/******************************************************************************
 + * drivers/xen/acpi-wmi/acpi-wmi.c
-+ * 
++ *
 + * Copyright (c) 2009 Kamala Narasimhan <kamala.narasimhan@citrix.com>
 + * Copyright (c) 2011 Ross Philipson <ross.philipson@citrix.com>
 + * Copyright (c) 2011 Citrix Systems, Inc.
@@ -1312,10 +1308,10 @@ index 0000000..feb2bc2
 + * IN THE SOFTWARE.
 + */
 +
-+/* Xen acpi-wmi implementation provides the interface required for userspace 
++/* Xen acpi-wmi implementation provides the interface required for userspace
 + * module (qemu) to communicate with acpi wmi wrapper kernel driver.
 + * Upon receiving request from qemu to call a WMI method or query or set WMI
-+ * data, it communicates the request to kernel acpi wmi layer which then 
++ * data, it communicates the request to kernel acpi wmi layer which then
 + * interacts with the base firmware to get the necessary information/execute
 + * relevant AML method etc.  The result returned by the base firmware is then
 + * communicated back to the userspace module (qemu).
@@ -1347,7 +1343,7 @@ index 0000000..feb2bc2
 +} wmi_access_type_t;
 +
 +static bool xen_wmi_misc_dev_registered = false;
-+static long xen_wmi_ioctl(struct file *filp, 
++static long xen_wmi_ioctl(struct file *filp,
 +                         unsigned int cmd, unsigned long arg);
 +
 +static struct file_operations xen_wmi_fops = {
@@ -1391,7 +1387,7 @@ index 0000000..feb2bc2
 +    if ( acpi_buf->pointer == NULL )
 +    {
 +        printk(KERN_ERR XEN_WMI_PREFIX "Copy input buffer allocation failure\n");
-+        return XEN_WMI_NOT_ENOUGH_MEMORY; 
++        return XEN_WMI_NOT_ENOUGH_MEMORY;
 +    }
 +
 +    if ( copy_from_user(acpi_buf->pointer,
@@ -1410,7 +1406,7 @@ index 0000000..feb2bc2
 +        (int)acpi_buf->length, acpi_buf->length);
 +#endif
 +
-+    return XEN_WMI_SUCCESS; 
++    return XEN_WMI_SUCCESS;
 +}
 +
 +/*
@@ -1420,7 +1416,7 @@ index 0000000..feb2bc2
 +{
 +    /* IMPORTANT NOTE:  It is a little short sighted to assume that the return type
 +     * will not be anything other than buffer type.  A follow-up check-in will
-+     * cover more types. 
++     * cover more types.
 +     */
 +
 +    union acpi_object *acpi_obj = acpi_buf->pointer;
@@ -1443,7 +1439,7 @@ index 0000000..feb2bc2
 +        return XEN_WMI_INVALID_ARGUMENT;
 +    }
 +
-+    if ( user_buf->length < acpi_obj->buffer.length ) 
++    if ( user_buf->length < acpi_obj->buffer.length )
 +    {
 +        printk(KERN_INFO XEN_WMI_PREFIX "Required buffer length is - %d\n", acpi_obj->buffer.length);
 +        printk(KERN_INFO XEN_WMI_PREFIX "Passed in length is - %d\n", user_buf->length);
@@ -1453,7 +1449,7 @@ index 0000000..feb2bc2
 +    if ( copy_to_user((char __user *) user_buf->pointer, acpi_obj->buffer.pointer, acpi_obj->buffer.length) )
 +    {
 +        printk(KERN_ERR XEN_WMI_PREFIX "Invalid user output buffer length\n");
-+        return XEN_WMI_NOT_ENOUGH_MEMORY; 
++        return XEN_WMI_NOT_ENOUGH_MEMORY;
 +    }
 +
 +#ifdef XEN_WMI_DEBUG
@@ -1461,8 +1457,8 @@ index 0000000..feb2bc2
 +        (int)acpi_obj->buffer.length, acpi_obj->buffer.length);
 +#endif
 +
-+    return XEN_WMI_SUCCESS; 
-+} 
++    return XEN_WMI_SUCCESS;
++}
 +
 +#ifdef XEN_WMI_DEBUG
 +
@@ -1490,7 +1486,7 @@ index 0000000..feb2bc2
 +#endif /* XEN_WMI_DEBUG */
 +
 +/*
-+ * xen_wmi_invoke_method 
++ * xen_wmi_invoke_method
 + */
 +static int xen_wmi_invoke_method(xen_wmi_obj_invocation_data_t *obj_inv_data, wmi_access_type_t type)
 +{
@@ -1498,28 +1494,28 @@ index 0000000..feb2bc2
 +    struct acpi_buffer in_buf, *in_arg = NULL, out_buf = {ACPI_ALLOCATE_BUFFER, NULL};
 +
 +    result = xen_wmi_copy_input_buffer(&obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.in_buf,
-+                                       &in_buf); 
++                                       &in_buf);
 +    if ( result != XEN_WMI_SUCCESS )
 +        return result;
 +
-+    if ( in_buf.length > 0 ) 
++    if ( in_buf.length > 0 )
 +        in_arg = &in_buf;
 +
 +    if ( type == wmi_access_objid )
-+        result = wmi_evaluate_method_objid(obj_inv_data->guid, 
-+                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.instance, 
++        result = wmi_evaluate_method_objid(obj_inv_data->guid,
++                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.instance,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.method_id,
 +                     obj_inv_data->objid,
 +                     in_arg, &out_buf);
 +    else if ( type == wmi_access_wmiid )
-+        result = wmi_evaluate_method_wmiid(obj_inv_data->guid, 
-+                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.instance, 
++        result = wmi_evaluate_method_wmiid(obj_inv_data->guid,
++                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.instance,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.method_id,
 +                     obj_inv_data->wmiid,
 +                     in_arg, &out_buf);
 +    else
-+        result = wmi_evaluate_method(obj_inv_data->guid, 
-+                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.instance, 
++        result = wmi_evaluate_method(obj_inv_data->guid,
++                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.instance,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.method_id,
 +                     in_arg, &out_buf);
 +
@@ -1533,35 +1529,35 @@ index 0000000..feb2bc2
 +#endif
 +        result = xen_wmi_copy_output_buffer(&out_buf,
 +                                            &obj_inv_data->xen_wmi_arg.xen_wmi_method_arg.out_buf);
-+        kfree(out_buf.pointer); 
++        kfree(out_buf.pointer);
 +    }
 +    else if ( result != XEN_WMI_SUCCESS )
 +        printk(KERN_ERR XEN_WMI_PREFIX "Invoke WMI method (type %d) failed with error - %d\n",
 +               type, result);
 +
 +    return result;
-+} 
++}
 +
 +/*
 + * xen_wmi_query_object
 + */
 +static int xen_wmi_query_object(xen_wmi_obj_invocation_data_t *obj_inv_data, wmi_access_type_t type)
 +{
-+    int result; 
++    int result;
 +    struct acpi_buffer out_buf = {ACPI_ALLOCATE_BUFFER, NULL};
 +
 +    if ( type == wmi_access_objid )
-+        result = wmi_query_block_objid(obj_inv_data->guid, 
++        result = wmi_query_block_objid(obj_inv_data->guid,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_query_obj_arg.instance,
 +                     obj_inv_data->objid,
 +                     &out_buf);
 +    else if ( type == wmi_access_wmiid )
-+        result = wmi_query_block_wmiid(obj_inv_data->guid, 
++        result = wmi_query_block_wmiid(obj_inv_data->guid,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_query_obj_arg.instance,
 +                     obj_inv_data->wmiid,
 +                     &out_buf);
 +    else
-+        result = wmi_query_block(obj_inv_data->guid, 
++        result = wmi_query_block(obj_inv_data->guid,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_query_obj_arg.instance,
 +                     &out_buf);
 +
@@ -1584,7 +1580,7 @@ index 0000000..feb2bc2
 +/*
 + * xen_wmi_set_object
 + */
-+static int xen_wmi_set_object(xen_wmi_obj_invocation_data_t *obj_inv_data, wmi_access_type_t type) 
++static int xen_wmi_set_object(xen_wmi_obj_invocation_data_t *obj_inv_data, wmi_access_type_t type)
 +{
 +    int result;
 +    struct acpi_buffer in_buf;
@@ -1598,19 +1594,19 @@ index 0000000..feb2bc2
 +        return result;
 +
 +    if ( type == wmi_access_objid )
-+        result = wmi_set_block_objid(obj_inv_data->guid, 
++        result = wmi_set_block_objid(obj_inv_data->guid,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_set_obj_arg.instance,
 +                     obj_inv_data->objid,
-+                     &in_buf); 
++                     &in_buf);
 +    else if ( type == wmi_access_wmiid )
-+        result = wmi_set_block_wmiid(obj_inv_data->guid, 
++        result = wmi_set_block_wmiid(obj_inv_data->guid,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_set_obj_arg.instance,
 +                     obj_inv_data->wmiid,
-+                     &in_buf); 
++                     &in_buf);
 +    else
-+        result = wmi_set_block(obj_inv_data->guid, 
++        result = wmi_set_block(obj_inv_data->guid,
 +                     obj_inv_data->xen_wmi_arg.xen_wmi_set_obj_arg.instance,
-+                     &in_buf); 
++                     &in_buf);
 +    if ( result != XEN_WMI_SUCCESS )
 +        printk(KERN_ERR XEN_WMI_PREFIX "Set object (type %d) failed with error - %d\n",
 +               type, result);
@@ -1620,9 +1616,9 @@ index 0000000..feb2bc2
 +}
 +
 +/*
-+ * xen_wmi_get_event_data 
++ * xen_wmi_get_event_data
 + */
-+static int xen_wmi_get_event_data(xen_wmi_obj_invocation_data_t *obj_inv_data, wmi_access_type_t type) 
++static int xen_wmi_get_event_data(xen_wmi_obj_invocation_data_t *obj_inv_data, wmi_access_type_t type)
 +{
 +    int result;
 +    struct acpi_buffer out_buf = {ACPI_ALLOCATE_BUFFER, NULL};
@@ -1661,7 +1657,7 @@ index 0000000..feb2bc2
 +        return XEN_WMI_INVALID_ARGUMENT;
 +    }
 +
-+    if ( user_buf->length < list_buf->length ) 
++    if ( user_buf->length < list_buf->length )
 +    {
 +        printk(KERN_ERR XEN_WMI_PREFIX "Copy list required length is: %d passed in length is: %d\n",
 +            list_buf->length, user_buf->length);
@@ -1671,7 +1667,7 @@ index 0000000..feb2bc2
 +    if ( copy_to_user((char __user *) user_buf->pointer, list_buf->pointer, list_buf->length) )
 +    {
 +        printk(KERN_ERR XEN_WMI_PREFIX "Copy list invalid user output buffer\n");
-+        return XEN_WMI_NOT_ENOUGH_MEMORY; 
++        return XEN_WMI_NOT_ENOUGH_MEMORY;
 +    }
 +
 +    return XEN_WMI_SUCCESS;
@@ -1810,7 +1806,7 @@ index 0000000..feb2bc2
 +}
 +
 +/*
-+ * xen_wmi_ioctl 
++ * xen_wmi_ioctl
 + */
 +static long xen_wmi_ioctl(struct file *filp,
 +                         unsigned int cmd, unsigned long arg)
@@ -1834,13 +1830,13 @@ index 0000000..feb2bc2
 +        printk(KERN_ERR XEN_WMI_PREFIX "Invalid object invocation parameter\n");
 +        return XEN_WMI_EFAULT;
 +    }
-+ 
-+    switch ( cmd ) 
++
++    switch ( cmd )
 +    {
 +        case XEN_WMI_IOCTL_CALL_METHOD:
 +            return xen_wmi_invoke_method(&obj_inv_data, wmi_access_none);
 +        case XEN_WMI_IOCTL_QUERY_OBJECT:
-+            return xen_wmi_query_object(&obj_inv_data, wmi_access_none); 
++            return xen_wmi_query_object(&obj_inv_data, wmi_access_none);
 +        case XEN_WMI_IOCTL_SET_OBJECT:
 +            return xen_wmi_set_object(&obj_inv_data, wmi_access_none);
 +        case XEN_WMI_IOCTL_GET_EVENT_DATA:
@@ -1848,13 +1844,13 @@ index 0000000..feb2bc2
 +        case XEN_WMI_IOCTL_CALL_METHOD_OBJID:
 +            return xen_wmi_invoke_method(&obj_inv_data, wmi_access_objid);
 +        case XEN_WMI_IOCTL_QUERY_OBJECT_OBJID:
-+            return xen_wmi_query_object(&obj_inv_data, wmi_access_objid); 
++            return xen_wmi_query_object(&obj_inv_data, wmi_access_objid);
 +        case XEN_WMI_IOCTL_SET_OBJECT_OBJID:
 +            return xen_wmi_set_object(&obj_inv_data, wmi_access_objid);
 +        case XEN_WMI_IOCTL_CALL_METHOD_WMIID:
 +            return xen_wmi_invoke_method(&obj_inv_data, wmi_access_wmiid);
 +        case XEN_WMI_IOCTL_QUERY_OBJECT_WMIID:
-+            return xen_wmi_query_object(&obj_inv_data, wmi_access_wmiid); 
++            return xen_wmi_query_object(&obj_inv_data, wmi_access_wmiid);
 +        case XEN_WMI_IOCTL_SET_OBJECT_WMIID:
 +            return xen_wmi_set_object(&obj_inv_data, wmi_access_wmiid);
 +        case XEN_WMI_IOCTL_GET_EVENT_DATA_WMIID:
@@ -1865,7 +1861,7 @@ index 0000000..feb2bc2
 +}
 +
 +/*
-+ * xen_wmi_init 
++ * xen_wmi_init
 + */
 +static int __init xen_wmi_init(void)
 +{
@@ -1877,13 +1873,13 @@ index 0000000..feb2bc2
 +    else
 +        xen_wmi_misc_dev_registered = true;
 +
-+    printk(KERN_INFO XEN_WMI_PREFIX "misc_register succeeded.\n"); 
++    printk(KERN_INFO XEN_WMI_PREFIX "misc_register succeeded.\n");
 +
 +    return ret;
 +}
 +
 +/*
-+ * xen_wmi_exit 
++ * xen_wmi_exit
 + */
 +static void xen_wmi_exit(void)
 +{
@@ -1893,17 +1889,17 @@ index 0000000..feb2bc2
 +        return;
 +
 +    if ( (ret = misc_deregister(&xen_wmi_misc)) < 0 )
-+        printk(KERN_ERR XEN_WMI_PREFIX "misc_deregister failed with error - %d\n", ret); 
++        printk(KERN_ERR XEN_WMI_PREFIX "misc_deregister failed with error - %d\n", ret);
 +}
 +
 +module_init(xen_wmi_init);
 +module_exit(xen_wmi_exit);
 +MODULE_LICENSE("Dual BSD/GPL");
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 407a12f..ec931b7 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -187,7 +187,25 @@ extern acpi_handle ec_get_handle(void);
+Index: linux-3.18.16/include/linux/acpi.h
+===================================================================
+--- linux-3.18.16.orig/include/linux/acpi.h	2015-06-14 18:19:31.000000000 +0200
++++ linux-3.18.16/include/linux/acpi.h	2015-06-19 17:10:44.345074486 +0200
+@@ -187,7 +187,25 @@
  
  extern bool acpi_is_pnp_device(struct acpi_device *);
  
@@ -1930,7 +1926,7 @@ index 407a12f..ec931b7 100644
  
  typedef void (*wmi_notify_handler) (u32 value, void *context);
  
-@@ -195,14 +213,42 @@ extern acpi_status wmi_evaluate_method(const char *guid, u8 instance,
+@@ -195,14 +213,42 @@
  					u32 method_id,
  					const struct acpi_buffer *in,
  					struct acpi_buffer *out);
@@ -1973,11 +1969,10 @@ index 407a12f..ec931b7 100644
  extern bool wmi_has_guid(const char *guid);
  
  #endif	/* CONFIG_ACPI_WMI */
-diff --git a/include/xen/public/acpi-wmi.h b/include/xen/public/acpi-wmi.h
-new file mode 100644
-index 0000000..070edae
---- /dev/null
-+++ b/include/xen/public/acpi-wmi.h
+Index: linux-3.18.16/include/xen/public/acpi-wmi.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.18.16/include/xen/public/acpi-wmi.h	2015-06-19 17:10:44.345074486 +0200
 @@ -0,0 +1,137 @@
 +/******************************************************************************
 + * acpi-wmi.h
@@ -2034,7 +2029,7 @@ index 0000000..070edae
 +#define XEN_WMI_EFAULT                  -14
 +#define XEN_WMI_INVALID_ARGUMENT        -22
 +#define XEN_WMI_ENOIOCTLCMD             -515
-+ 
++
 +#define XEN_WMI_IOCTL_CALL_METHOD           100
 +#define XEN_WMI_IOCTL_QUERY_OBJECT          101
 +#define XEN_WMI_IOCTL_SET_OBJECT            102
@@ -2055,7 +2050,7 @@ index 0000000..070edae
 +    unsigned int name;
 +    unsigned int wmiid;
 +    char _hid[XEN_WMI_UID_SIZE];
-+    char _uid[XEN_WMI_UID_SIZE];	
++    char _uid[XEN_WMI_UID_SIZE];
 +} xen_wmi_device_t;
 +
 +typedef struct xen_wmi_guid_block {
@@ -2072,7 +2067,7 @@ index 0000000..070edae
 +} xen_wmi_guid_block_t;
 +
 +typedef struct xen_wmi_buffer {
-+    size_t       length; 
++    size_t       length;
 +    void        *pointer;
 +    size_t      *copied_length;
 +} xen_wmi_buffer_t;
@@ -2086,7 +2081,7 @@ index 0000000..070edae
 +    xen_wmi_buffer_t out_buf;
 +} xen_wmi_device_block_data_t;
 +
-+typedef struct xen_wmi_obj_invocation_data { 
++typedef struct xen_wmi_obj_invocation_data {
 +    byte                       guid[XEN_WMI_GUID_SIZE];
 +    char                       objid[4]; /* 2 byte ID */
 +    unsigned int               wmiid;
