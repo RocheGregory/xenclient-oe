@@ -8,9 +8,7 @@ DEPENDS += "bc-native"
 KERNEL_IMAGETYPE = "bzImage"
 
 SRC_URI = "https://www.kernel.org/pub/linux/kernel/v${PV_MAJOR}.x/linux-${PV}.tar.gz;name=kernel \
-    file://bp-make-cache-mode-real-type.patch;patch=1 \
-    file://bp-pat-cache-mode-translation-tables.patch;patch=1 \
-    file://bp-support-xen-pvdomains-using-pat.patch;patch=1 \
+    file://bp-xen-pv-guest-pat-support.patch;patch=1 \
     file://xen-acpi-wmi.patch;patch=1 \
     file://bridge-carrier-follow-prio0.patch;patch=1 \
     file://privcmd-mmapnocache-ioctl.patch;patch=1 \

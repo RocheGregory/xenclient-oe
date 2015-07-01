@@ -1,7 +1,7 @@
 Index: linux-3.18.16/drivers/gpu/drm/i915/Makefile
 ===================================================================
---- linux-3.18.16.orig/drivers/gpu/drm/i915/Makefile	2015-06-19 17:19:33.368986920 +0200
-+++ linux-3.18.16/drivers/gpu/drm/i915/Makefile	2015-06-19 17:20:49.911438751 +0200
+--- linux-3.18.16.orig/drivers/gpu/drm/i915/Makefile	2015-06-29 15:17:13.925682052 +0200
++++ linux-3.18.16/drivers/gpu/drm/i915/Makefile	2015-06-29 15:19:42.184019001 +0200
 @@ -27,6 +27,7 @@
  	  i915_gem.o \
  	  i915_gem_stolen.o \
@@ -12,8 +12,8 @@ Index: linux-3.18.16/drivers/gpu/drm/i915/Makefile
  	  i915_irq.o \
 Index: linux-3.18.16/drivers/gpu/drm/i915/i915_dma.c
 ===================================================================
---- linux-3.18.16.orig/drivers/gpu/drm/i915/i915_dma.c	2015-06-19 17:19:33.355653740 +0200
-+++ linux-3.18.16/drivers/gpu/drm/i915/i915_dma.c	2015-06-19 17:20:50.098103267 +0200
+--- linux-3.18.16.orig/drivers/gpu/drm/i915/i915_dma.c	2015-06-29 15:17:13.909015573 +0200
++++ linux-3.18.16/drivers/gpu/drm/i915/i915_dma.c	2015-06-29 15:19:42.370683575 +0200
 @@ -2049,6 +2049,7 @@
  	DRM_IOCTL_DEF_DRV(I915_REG_READ, i915_reg_read_ioctl, DRM_UNLOCKED|DRM_RENDER_ALLOW),
  	DRM_IOCTL_DEF_DRV(I915_GET_RESET_STATS, i915_get_reset_stats_ioctl, DRM_UNLOCKED|DRM_RENDER_ALLOW),
@@ -24,8 +24,8 @@ Index: linux-3.18.16/drivers/gpu/drm/i915/i915_dma.c
  int i915_max_ioctl = ARRAY_SIZE(i915_ioctls);
 Index: linux-3.18.16/drivers/gpu/drm/i915/i915_drv.h
 ===================================================================
---- linux-3.18.16.orig/drivers/gpu/drm/i915/i915_drv.h	2015-06-19 17:19:33.388986691 +0200
-+++ linux-3.18.16/drivers/gpu/drm/i915/i915_drv.h	2015-06-19 17:20:50.198102115 +0200
+--- linux-3.18.16.orig/drivers/gpu/drm/i915/i915_drv.h	2015-06-29 15:17:13.942348532 +0200
++++ linux-3.18.16/drivers/gpu/drm/i915/i915_drv.h	2015-06-29 15:19:42.464015862 +0200
 @@ -1838,6 +1838,7 @@
  
  	struct sg_table *pages;
@@ -46,7 +46,7 @@ Index: linux-3.18.16/drivers/gpu/drm/i915/i915_drv.h
 Index: linux-3.18.16/drivers/gpu/drm/i915/i915_gem_foreign.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-3.18.16/drivers/gpu/drm/i915/i915_gem_foreign.c	2015-06-26 19:08:28.166667849 +0200
++++ linux-3.18.16/drivers/gpu/drm/i915/i915_gem_foreign.c	2015-06-29 15:30:21.353498156 +0200
 @@ -0,0 +1,244 @@
 +/*
 + * Copyright © 2013 Citrix Systems, Inc.
@@ -294,13 +294,13 @@ Index: linux-3.18.16/drivers/gpu/drm/i915/i915_gem_foreign.c
 +
 Index: linux-3.18.16/include/uapi/drm/i915_drm.h
 ===================================================================
---- linux-3.18.16.orig/include/uapi/drm/i915_drm.h	2015-06-19 17:19:33.322320791 +0200
-+++ linux-3.18.16/include/uapi/drm/i915_drm.h	2015-06-19 17:20:50.364766863 +0200
+--- linux-3.18.16.orig/include/uapi/drm/i915_drm.h	2015-06-29 15:17:13.892349093 +0200
++++ linux-3.18.16/include/uapi/drm/i915_drm.h	2015-06-29 15:19:42.620680773 +0200
 @@ -224,6 +224,7 @@
  #define DRM_I915_REG_READ		0x31
  #define DRM_I915_GET_RESET_STATS	0x32
  #define DRM_I915_GEM_USERPTR		0x33
-+#define DRM_I915_GEM_FOREIGN		0x34
++#define DRM_I915_GEM_FOREIGN		0x36
  
  #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
  #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -330,8 +330,8 @@ Index: linux-3.18.16/include/uapi/drm/i915_drm.h
  	__u64 user_size;
 Index: linux-3.18.16/arch/x86/include/asm/xen/page.h
 ===================================================================
---- linux-3.18.16.orig/arch/x86/include/asm/xen/page.h	2015-06-26 18:59:23.083005176 +0200
-+++ linux-3.18.16/arch/x86/include/asm/xen/page.h	2015-06-26 19:04:26.776139334 +0200
+--- linux-3.18.16.orig/arch/x86/include/asm/xen/page.h	2015-06-29 15:17:13.875682613 +0200
++++ linux-3.18.16/arch/x86/include/asm/xen/page.h	2015-06-29 15:19:50.210595610 +0200
 @@ -54,12 +54,14 @@
  				   struct page **pages, unsigned int count);
  extern int m2p_add_override(unsigned long mfn, struct page *page,
@@ -349,33 +349,37 @@ Index: linux-3.18.16/arch/x86/include/asm/xen/page.h
  
 Index: linux-3.18.16/arch/x86/xen/p2m.c
 ===================================================================
---- linux-3.18.16.orig/arch/x86/xen/p2m.c	2015-06-26 18:59:23.066338704 +0200
-+++ linux-3.18.16/arch/x86/xen/p2m.c	2015-06-26 19:04:26.879471465 +0200
-@@ -991,6 +991,57 @@
+--- linux-3.18.16.orig/arch/x86/xen/p2m.c	2015-06-29 15:19:31.207475499 +0200
++++ linux-3.18.16/arch/x86/xen/p2m.c	2015-06-29 15:31:18.672844412 +0200
+@@ -991,18 +991,18 @@
  	spin_unlock_irqrestore(&m2p_override_lock, flags);
  
  	/* p2m(m2p(mfn)) == mfn: the mfn is already present somewhere in
+-	 * this domain. Set the FOREIGN_FRAME_BIT in the p2m for the other
 +	 * this domain. set the FOREIGN_FRAME_BIT in the p2m for the other
-+	 * pfn so that the following mfn_to_pfn(mfn) calls will return the
-+	 * pfn from the m2p_override (the backend pfn) instead.
+ 	 * pfn so that the following mfn_to_pfn(mfn) calls will return the
+ 	 * pfn from the m2p_override (the backend pfn) instead.
+-	 * We need to do this because the pages shared by the frontend
 +	 * we need to do this because the pages shared by the frontend
-+	 * (xen-blkfront) can be already locked (lock_page, called by
-+	 * do_read_cache_page); when the userspace backend tries to use them
+ 	 * (xen-blkfront) can be already locked (lock_page, called by
+ 	 * do_read_cache_page); when the userspace backend tries to use them
+-	 * with direct_IO, mfn_to_pfn returns the pfn of the frontend, so
+-	 * do_blockdev_direct_IO is going to try to lock the same pages
 +	 * with direct_io, mfn_to_pfn returns the pfn of the frontend, so
 +	 * do_blockdev_direct_io is going to try to lock the same pages
-+	 * again resulting in a deadlock.
+ 	 * again resulting in a deadlock.
+-	 * As a side effect get_user_pages_fast might not be safe on the
 +	 * as a side effect get_user_pages_fast might not be safe on the
-+	 * frontend pages while they are being shared with the backend,
+ 	 * frontend pages while they are being shared with the backend,
+-	 * because mfn_to_pfn (that ends up being called by GUPF) will
 +	 * because mfn_to_pfn (that ends up being called by gupf) will
-+	 * return the backend pfn rather than the frontend pfn. */
-+	pfn = mfn_to_pfn_no_overrides(mfn);
-+	if (get_phys_to_machine(pfn) == mfn)
-+		set_phys_to_machine(pfn, FOREIGN_FRAME(mfn));
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(m2p_add_override);
-+
+ 	 * return the backend pfn rather than the frontend pfn. */
+ 	pfn = mfn_to_pfn_no_overrides(mfn);
+ 	if (get_phys_to_machine(pfn) == mfn)
+@@ -1012,6 +1012,87 @@
+ }
+ EXPORT_SYMBOL_GPL(m2p_add_override);
+ 
 +int m2p_add_override_legacy(unsigned long mfn, struct page *page)
 +{
 +	unsigned long flags;
@@ -405,23 +409,8 @@ Index: linux-3.18.16/arch/x86/xen/p2m.c
 +	list_add(&page->lru,  &m2p_overrides[mfn_hash(mfn)]);
 +	spin_unlock_irqrestore(&m2p_override_lock, flags);
 +
-+	/* p2m(m2p(mfn)) == mfn: the mfn is already present somewhere in
- 	 * this domain. Set the FOREIGN_FRAME_BIT in the p2m for the other
- 	 * pfn so that the following mfn_to_pfn(mfn) calls will return the
- 	 * pfn from the m2p_override (the backend pfn) instead.
-@@ -1004,13 +1055,65 @@
- 	 * frontend pages while they are being shared with the backend,
- 	 * because mfn_to_pfn (that ends up being called by GUPF) will
- 	 * return the backend pfn rather than the frontend pfn. */
--	pfn = mfn_to_pfn_no_overrides(mfn);
--	if (get_phys_to_machine(pfn) == mfn)
-+	ret = __get_user(pfn, &machine_to_phys_mapping[mfn]);
-+	if (ret == 0 && get_phys_to_machine(pfn) == mfn)
- 		set_phys_to_machine(pfn, FOREIGN_FRAME(mfn));
- 
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(m2p_add_override);
++	return 0;
++}
 +EXPORT_SYMBOL_GPL(m2p_add_override_legacy);
 +
 +int m2p_remove_override_legacy(struct page *page)
@@ -456,25 +445,22 @@ Index: linux-3.18.16/arch/x86/xen/p2m.c
 +
 +	set_phys_to_machine(pfn, page->index);
 +
-+	/* p2m(m2p(mfn)) == FOREIGN_FRAME(mfn): the mfn is already present
-+	 * somewhere in this domain, even before being added to the
-+	 * m2p_override (see comment above in m2p_add_override).
-+	 * If there are no other entries in the m2p_override corresponding
++	/*
++         * If there are no other entries in the m2p_override corresponding
 +	 * to this mfn, then remove the FOREIGN_FRAME_BIT from the p2m for
-+	 * the original pfn (the one shared by the frontend): the backend
-+	 * cannot do any IO on this page anymore because it has been
-+	 * unshared. Removing the FOREIGN_FRAME_BIT from the p2m entry of
-+	 * the original pfn causes mfn_to_pfn(mfn) to return the frontend
-+	 * pfn again. */
++	 * the original pfn.
++         * Removing the FOREIGN_FRAME_BIT from the p2m entry of the original
++         * pfn causes mfn_to_pfn(mfn) to return the frontend pfn again.
++         */
 +	mfn &= ~FOREIGN_FRAME_BIT;
 +	ret = __get_user(pfn, &machine_to_phys_mapping[mfn]);
 +	if (ret == 0 && get_phys_to_machine(pfn) == FOREIGN_FRAME(mfn) &&
 +			m2p_find_override(mfn) == NULL)
 +		set_phys_to_machine(pfn, mfn);
-+
 +	return 0;
 +}
 +EXPORT_SYMBOL_GPL(m2p_remove_override_legacy);
- 
++
  int clear_foreign_p2m_mapping(struct gnttab_unmap_grant_ref *unmap_ops,
  			      struct gnttab_map_grant_ref *kmap_ops,
+ 			      struct page **pages, unsigned int count)
