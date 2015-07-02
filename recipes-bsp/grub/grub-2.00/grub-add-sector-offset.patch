@@ -1,0 +1,69 @@
+diff --git a/util/grub-setup.c b/util/grub-setup.c
+index 085e8df..fcc9a7d 100644
+--- a/util/grub-setup.c
++++ b/util/grub-setup.c
+@@ -142,7 +142,8 @@ static void
+ setup (const char *dir,
+        const char *boot_file, const char *core_file,
+        const char *dest, int force,
+-       int fs_probe, int allow_floppy)
++       int fs_probe, int allow_floppy,
++       grub_disk_addr_t sector_offset)
+ {
+   char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
+   char *boot_img, *core_img;
+@@ -171,6 +172,8 @@ setup (const char *dir,
+ 					   unsigned offset,
+ 					   unsigned length)
+     {
++      //sector += sector_offset;
++      
+       grub_util_info ("the first sector is <%" PRIuGRUB_UINT64_T ",%u,%u>",
+ 		      sector, offset, length);
+ 
+@@ -185,6 +188,8 @@ setup (const char *dir,
+ 					 unsigned length)
+     {
+       struct grub_boot_blocklist *prev = block + 1;
++      
++      //sector += sector_offset;
+ 
+       grub_util_info ("saving <%" PRIuGRUB_UINT64_T ",%u,%u>",
+ 		      sector, offset, length);
+@@ -952,6 +957,8 @@ static struct argp_option options[] = {
+    N_("use GRUB files in the directory DIR [default=%s]"), 0},
+   {"device-map",  'm', N_("FILE"), 0,
+    N_("use FILE as the device map [default=%s]"), 0},
++  {"offset-sectors", 'o', "offset", 0,
++   N_("offset sector numbers in blocklist by N"), 0},
+   {"force",       'f', 0,      0,
+    N_("install even if problems are detected"), 0},
+   {"skip-fs-probe",'s',0,      0,
+@@ -997,6 +1004,7 @@ struct arguments
+   int  fs_probe;
+   int allow_floppy;
+   char *device;
++  grub_disk_addr_t sector_offset;
+ };
+ 
+ static error_t
+@@ -1040,6 +1048,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
+         arguments->dev_map = xstrdup (arg);
+         break;
+ 
++      case 'o':
++        arguments->sector_offset = strtoul(arg, NULL, 0);
++        break;
++
+       case 'f':
+         arguments->force = 1;
+         break;
+@@ -1173,7 +1185,7 @@ main (int argc, char *argv[])
+ 	 arguments.boot_file ? : DEFAULT_BOOT_FILE,
+ 	 arguments.core_file ? : DEFAULT_CORE_FILE,
+ 	 dest_dev, arguments.force,
+-	 arguments.fs_probe, arguments.allow_floppy);
++	 arguments.fs_probe, arguments.allow_floppy, arguments.sector_offset);
+ 
+   /* Free resources.  */
+   grub_fini_all ();

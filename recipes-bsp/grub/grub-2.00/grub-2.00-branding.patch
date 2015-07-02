@@ -1,0 +1,62 @@
+diff --git a/grub-core/boot/i386/pc/boot.S b/grub-core/boot/i386/pc/boot.S
+index 314f140..8a14f77 100644
+--- a/grub-core/boot/i386/pc/boot.S
++++ b/grub-core/boot/i386/pc/boot.S
+@@ -378,7 +378,7 @@ LOCAL(general_error):
+ LOCAL(stop):
+ 	jmp	LOCAL(stop)
+ 
+-notification_string:	.asciz "GRUB "
++notification_string:	.asciz "     "
+ geometry_error_string:	.asciz "Geom"
+ hd_probe_error_string:	.asciz "Hard Disk"
+ read_error_string:	.asciz "Read"
+diff --git a/grub-core/boot/i386/pc/diskboot.S b/grub-core/boot/i386/pc/diskboot.S
+index d030a14..4e52300 100644
+--- a/grub-core/boot/i386/pc/diskboot.S
++++ b/grub-core/boot/i386/pc/diskboot.S
+@@ -320,9 +320,9 @@ LOCAL(general_error):
+ /* go here when you need to stop the machine hard after an error condition */
+ LOCAL(stop):	jmp	LOCAL(stop)
+ 
+-notification_string:	.asciz "loading"
++notification_string:	.asciz "       "
+ 
+-notification_step:	.asciz "."
++notification_step:	.asciz " "
+ notification_done:	.asciz "\r\n"
+ 
+ geometry_error_string:	.asciz "Geom"
+diff --git a/grub-core/kern/main.c b/grub-core/kern/main.c
+index 3262444..eff46b2 100644
+--- a/grub-core/kern/main.c
++++ b/grub-core/kern/main.c
+@@ -210,10 +210,12 @@ grub_main (void)
+   /* First of all, initialize the machine.  */
+   grub_machine_init ();
+ 
++#if 0
+   /* Hello.  */
+   grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+   grub_printf ("Welcome to GRUB!\n\n");
+   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
++#endif
+ 
+   /* Load pre-loaded modules and free the space.  */
+   grub_register_exported_symbols ();
+diff --git a/grub-core/normal/menu.c b/grub-core/normal/menu.c
+index 7e0a158..9065cbe 100644
+--- a/grub-core/normal/menu.c
++++ b/grub-core/normal/menu.c
+@@ -672,9 +672,11 @@ static void
+ notify_booting (grub_menu_entry_t entry,
+ 		void *userdata __attribute__((unused)))
+ {
++#if 0
+   grub_printf ("  ");
+   grub_printf_ (N_("Booting `%s'"), entry->title);
+   grub_printf ("\n\n");
++#endif
+ }
+ 
+ /* Callback invoked when a default menu entry executed because of a timeout

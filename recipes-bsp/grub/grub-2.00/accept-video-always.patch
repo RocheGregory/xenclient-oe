@@ -1,0 +1,13 @@
+diff --git a/grub-core/loader/multiboot.c b/grub-core/loader/multiboot.c
+index fcdf5ff..ab412e4 100644
+--- a/grub-core/loader/multiboot.c
++++ b/grub-core/loader/multiboot.c
+@@ -216,7 +216,7 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
+  else
+    grub_env_set ("gfxpayload", "text");
+ 
+-  accepts_video = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER);
++  accepts_video = 1;
+   accepts_ega_text = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_EGA_TEXT);
+   return GRUB_ERR_NONE;
+ }

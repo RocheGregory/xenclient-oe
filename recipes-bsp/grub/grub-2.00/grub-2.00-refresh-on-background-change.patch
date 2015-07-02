@@ -1,0 +1,12 @@
+diff --git a/grub-core/term/gfxterm.c b/grub-core/term/gfxterm.c
+index c995b84..10063fc 100644
+--- a/grub-core/term/gfxterm.c
++++ b/grub-core/term/gfxterm.c
+@@ -1181,6 +1181,7 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
+         }
+     }
+ 
++  grub_gfxterm_refresh();
+   /* All was ok.  */
+   grub_errno = GRUB_ERR_NONE;
+   return grub_errno;
