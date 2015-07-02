@@ -1,0 +1,150 @@
+From 3cc134e3ee09055d5a87193fc7eb0ecf4a59eaa1 Mon Sep 17 00:00:00 2001
+From: Imre Deak <imre.deak@intel.com>
+Date: Wed, 19 Nov 2014 15:30:03 +0200
+Subject: [PATCH] drm/i915: sanitize rps irq enabling
+
+Atm we first enable the RPS interrupts then we clear any pending ones.
+By this we could lose an interrupt arriving after we unmasked it. This
+may not be a problem as the caller should handle such a race, but logic
+still calls for the opposite order. Also we can delay enabling the
+interrupts until after all the RPS initialization is ready with the
+following order:
+
+1. disable left-over RPS (earlier via intel_uncore_sanitize)
+2. clear any pending RPS interrupts
+3. initialize RPS
+4. enable RPS interrupts
+
+This also allows us to do the 2. and 4. step the same way for all
+platforms, so let's follow this order to simplifying things.
+
+Also make sure any queued interrupts are also cleared.
+
+v2:
+- rebase on the GEN9 patches where we don't support RPS yet, so we
+  musn't enable RPS interrupts on it (Paulo)
+v3:
+- avoid enabling RPS interrupts on GEN>9 too (Paulo)
+- clarify the RPS init sequence in the log message (Chris)
+- add POSTING_READ to gen6_reset_rps_interrupts() (Paulo)
+- WARN if any PM_IIR bits are set in gen6_enable_rps_interrupts()
+  (Paulo)
+
+Signed-off-by: Imre Deak <imre.deak@intel.com>
+Reviewed-by: Paulo Zanoni <paulo.r.zanoni@intel.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/i915/i915_irq.c  | 14 +++++++++++++-
+ drivers/gpu/drm/i915/intel_drv.h |  1 +
+ drivers/gpu/drm/i915/intel_pm.c  | 19 +++++++++++--------
+ 3 files changed, 25 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index 21c579e..56b3053 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -255,14 +255,26 @@ void gen6_disable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+ 	snb_update_pm_irq(dev_priv, mask, 0);
+ }
+ 
++void gen6_reset_rps_interrupts(struct drm_device *dev)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	uint32_t reg = gen6_pm_iir(dev_priv);
++
++	spin_lock_irq(&dev_priv->irq_lock);
++	I915_WRITE(reg, dev_priv->pm_rps_events);
++	I915_WRITE(reg, dev_priv->pm_rps_events);
++	POSTING_READ(reg);
++	spin_unlock_irq(&dev_priv->irq_lock);
++}
++
+ void gen6_enable_rps_interrupts(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 
+ 	spin_lock_irq(&dev_priv->irq_lock);
+ 	WARN_ON(dev_priv->rps.pm_iir);
++	WARN_ON(I915_READ(gen6_pm_iir(dev_priv)) & dev_priv->pm_rps_events);
+ 	gen6_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
+-	I915_WRITE(gen6_pm_iir(dev_priv), dev_priv->pm_rps_events);
+ 	spin_unlock_irq(&dev_priv->irq_lock);
+ }
+ 
+diff --git a/drivers/gpu/drm/i915/intel_drv.h b/drivers/gpu/drm/i915/intel_drv.h
+index d1f9b63..f0a46ec 100644
+--- a/drivers/gpu/drm/i915/intel_drv.h
++++ b/drivers/gpu/drm/i915/intel_drv.h
+@@ -791,6 +791,7 @@ void gen5_enable_gt_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void gen5_disable_gt_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void gen6_enable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void gen6_disable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask);
++void gen6_reset_rps_interrupts(struct drm_device *dev);
+ void gen6_enable_rps_interrupts(struct drm_device *dev);
+ void gen6_disable_rps_interrupts(struct drm_device *dev);
+ void intel_runtime_pm_disable_interrupts(struct drm_i915_private *dev_priv);
+diff --git a/drivers/gpu/drm/i915/intel_pm.c b/drivers/gpu/drm/i915/intel_pm.c
+index cdd00f1..c5b2636 100644
+--- a/drivers/gpu/drm/i915/intel_pm.c
++++ b/drivers/gpu/drm/i915/intel_pm.c
+@@ -4747,8 +4747,6 @@ static void gen8_enable_rps(struct drm_device *dev)
+ 
+ 	gen6_set_rps(dev, (I915_READ(GEN6_GT_PERF_STATUS) & 0xff00) >> 8);
+ 
+-	gen6_enable_rps_interrupts(dev);
+-
+ 	gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
+ }
+ 
+@@ -4845,8 +4843,6 @@ static void gen6_enable_rps(struct drm_device *dev)
+ 	dev_priv->rps.power = HIGH_POWER; /* force a reset */
+ 	gen6_set_rps(dev_priv->dev, dev_priv->rps.min_freq_softlimit);
+ 
+-	gen6_enable_rps_interrupts(dev);
+-
+ 	rc6vids = 0;
+ 	ret = sandybridge_pcode_read(dev_priv, GEN6_PCODE_READ_RC6VIDS, &rc6vids);
+ 	if (IS_GEN6(dev) && ret) {
+@@ -5348,8 +5344,6 @@ static void cherryview_enable_rps(struct drm_device *dev)
+ 
+ 	valleyview_set_rps(dev_priv->dev, dev_priv->rps.efficient_freq);
+ 
+-	gen6_enable_rps_interrupts(dev);
+-
+ 	gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
+ }
+ 
+@@ -5431,8 +5425,6 @@ static void valleyview_enable_rps(struct drm_device *dev)
+ 
+ 	valleyview_set_rps(dev_priv->dev, dev_priv->rps.efficient_freq);
+ 
+-	gen6_enable_rps_interrupts(dev);
+-
+ 	gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
+ }
+ 
+@@ -6246,6 +6238,13 @@ static void intel_gen6_powersave_work(struct work_struct *work)
+ 
+ 	mutex_lock(&dev_priv->rps.hw_lock);
+ 
++	/*
++	 * TODO: reset/enable RPS interrupts on GEN9+ too, once RPS support is
++	 * added for it.
++	 */
++	if (INTEL_INFO(dev)->gen < 9)
++		gen6_reset_rps_interrupts(dev);
++
+ 	if (IS_CHERRYVIEW(dev)) {
+ 		cherryview_enable_rps(dev);
+ 	} else if (IS_VALLEYVIEW(dev)) {
+@@ -6260,6 +6259,10 @@ static void intel_gen6_powersave_work(struct work_struct *work)
+ 		__gen6_update_ring_freq(dev);
+ 	}
+ 	dev_priv->rps.enabled = true;
++
++	if (INTEL_INFO(dev)->gen < 9)
++		gen6_enable_rps_interrupts(dev);
++
+ 	mutex_unlock(&dev_priv->rps.hw_lock);
+ 
+ 	intel_runtime_pm_put(dev_priv);

@@ -1,0 +1,207 @@
+Index: xcpmd/src/acpi-events.c
+===================================================================
+--- xcpmd.orig/src/acpi-events.c	2015-06-22 15:35:34.409997874 +0200
++++ xcpmd/src/acpi-events.c	2015-06-22 15:40:56.796254360 +0200
+@@ -31,9 +31,6 @@
+ #include "xcpmd.h"
+ #include "acpi-events.h"
+ 
+-static int acpi_events_fd = -1;
+-static struct event acpi_event;
+-
+ static void write_state_info_in_xenstore(FILE *file, char *xenstore_path,
+              char *search_str, char *default_value, char *alternate_value)
+ {
+@@ -142,42 +139,6 @@
+     }
+ }
+ 
+-void acpi_events_read(void)
+-{
+-    char acpi_buffer[1024];
+-    ssize_t len;
+-
+-    while ( 1 )
+-    {
+-        memset(acpi_buffer, 0, sizeof(acpi_buffer));
+-        len = recv(acpi_events_fd, acpi_buffer, sizeof(acpi_buffer), 0);
+-
+-        if ( len == 0 )
+-            break;
+-
+-        if ( len == -1 )
+-        {
+-            if ( errno != EAGAIN )
+-                xcpmd_log(LOG_ERR, "Error returned while reading ACPI event - %d\n", errno);
+-            /* else nothing to read */
+-            break;
+-        }
+-
+-        process_acpi_message(acpi_buffer, len);
+-#ifdef XCPMD_DEBUG
+-        acpi_buffer[len] = '\0';
+-        xcpmd_log(LOG_DEBUG, "~ACPI-event: %s\n", acpi_buffer);
+-#endif
+-    }
+-}
+-
+-static void
+-wrapper_acpi_event(int fd, short event, void *opaque)
+-{
+-    acpi_events_read();
+-}
+-
+-
+ void
+ handle_ac_adapter_event(uint32_t type, uint32_t data)
+ {
+@@ -207,69 +168,22 @@
+     }
+ }
+ 
+-
+-int acpi_events_initialize(void)
++void
++handle_button_event(uint32_t type, uint32_t data)
+ {
+-    int ret, i, err;
+-    struct sockaddr_un addr;
+-
+-    acpi_events_fd = socket(PF_UNIX, SOCK_STREAM, 0);
+-    if ( acpi_events_fd == -1 )
+-    {
+-        xcpmd_log(LOG_ERR, "Socket function failed with error - %d\n", errno);
+-        acpi_events_cleanup();
+-        return -1;
+-    }
+-
+-    ret = file_set_nonblocking(acpi_events_fd);
+-    if ( ret == -1 )
+-    {
+-        xcpmd_log(LOG_ERR, "Set non-blocking failed with error - %d\n", errno);
+-        acpi_events_cleanup();
+-        return -1;
+-    }
+-
+-    addr.sun_family = AF_UNIX;
+-    strncpy(addr.sun_path, ACPID_SOCKET_PATH, strlen(ACPID_SOCKET_PATH));
+-    addr.sun_path[strlen(ACPID_SOCKET_PATH)] = '\0';
+-
+-    for ( i = 0; ; i++ )
++    switch (type)
+     {
+-        ret = connect(acpi_events_fd, (struct sockaddr *)&addr, sizeof(addr));
+-
+-        if ( ret != -1 )
++        case ACPI_BUTTON_TYPE_POWER: /* power button pressed */
++            handle_pbtn_pressed_event();
+             break;
+-
+-        if ( i == 5 )
+-        {
+-            xcpmd_log(LOG_INFO, "ACPI events initialization failed!\n");
+-            acpi_events_cleanup();
+-            return -1;
+-        }
+-
+-        xcpmd_log(LOG_ERR, "Socket connection function failed with error - %d, on attempt %d\n",
+-                  errno, i + 1);
+-
+-        sleep(5);
++        case ACPI_BUTTON_TYPE_SLEEP: /* sleep button pressed */
++            handle_sbtn_pressed_event();
++            break;
++        case ACPI_BUTTON_TYPE_LID:   /* lid closed */
++            xcpmd_log(LOG_WARNING, "Lid event happened, with data=%d. Doing nothing.\n", data);
++	    /* handle_lid_state_change(); */
++            break;
++        default:
++            xcpmd_log(LOG_WARNING, "Unknown button event code %d\n", type);
+     }
+-
+-    /* register event on acpi socket */
+-    event_set(&acpi_event, acpi_events_fd, EV_READ | EV_PERSIST,
+-              wrapper_acpi_event, NULL);
+-    event_add(&acpi_event, NULL);
+-
+-    xcpmd_log(LOG_INFO, "ACPI events initialized.\n");
+-
+-    return 0;
+ }
+-
+-void acpi_events_cleanup(void)
+-{
+-    xcpmd_log(LOG_INFO, "ACPI events cleanup\n");
+-
+-    if ( acpi_events_fd != -1 )
+-        close(acpi_events_fd);
+-
+-    acpi_events_fd = -1;
+-}
+-
+Index: xcpmd/src/acpi-events.h
+===================================================================
+--- xcpmd.orig/src/acpi-events.h	2015-06-22 15:35:34.409997874 +0200
++++ xcpmd/src/acpi-events.h	2015-06-22 15:40:56.929586147 +0200
+@@ -33,5 +33,11 @@
+ #define ACPI_BATTERY_NOTIFY_STATUS      0x80
+ #define ACPI_BATTERY_NOTIFY_INFO        0x81
+ 
++/* From drivers/acpi/button.c */
++#define ACPI_BUTTON_CLASS               "button"
++#define ACPI_BUTTON_TYPE_POWER          0x01
++#define ACPI_BUTTON_TYPE_SLEEP          0x03
++#define ACPI_BUTTON_TYPE_LID            0x05
++
+ #endif
+ 
+Index: xcpmd/src/netlink.c
+===================================================================
+--- xcpmd.orig/src/netlink.c	2015-06-22 15:35:34.409997874 +0200
++++ xcpmd/src/netlink.c	2015-06-22 15:40:57.032918283 +0200
+@@ -78,6 +78,8 @@
+         handle_ac_adapter_event(event->type, event->data);
+     else if (strcmp(event->device_class, ACPI_BATTERY_CLASS) == 0)
+         handle_battery_event(event->type);
++    else if (strcmp(event->device_class, ACPI_BUTTON_CLASS) == 0)
++        handle_button_event(event->type, event->data);
+ 
+     return 0;
+ }
+Index: xcpmd/src/prototypes.h
+===================================================================
+--- xcpmd.orig/src/prototypes.h	2015-06-22 15:35:34.413331169 +0200
++++ xcpmd/src/prototypes.h	2015-06-22 15:40:57.132917124 +0200
+@@ -31,6 +31,7 @@
+ void acpi_events_read(void);
+ void handle_ac_adapter_event(uint32_t type, uint32_t data);
+ void handle_battery_event(uint32_t type);
++void handle_button_event(uint32_t type, uint32_t data);
+ int acpi_events_initialize(void);
+ void acpi_events_cleanup(void);
+ /* platform.c */
+Index: xcpmd/src/xcpmd.c
+===================================================================
+--- xcpmd.orig/src/xcpmd.c	2015-06-22 15:35:34.413331169 +0200
++++ xcpmd/src/xcpmd.c	2015-06-22 15:40:57.226249375 +0200
+@@ -797,12 +797,6 @@
+         goto xcpmd_err;
+     }
+ 
+-    if (acpi_events_initialize() == -1)
+-    {
+-        xcpmd_log(LOG_ERR, "Failed to initialize ACPI events monitor\n");
+-        goto xcpmd_err;
+-    }
+-
+     if (netlink_init() != 0)
+     {
+         xcpmd_log(LOG_ERR, "Failed to initialize netlink\n");
+@@ -821,7 +815,6 @@
+ xcpmd_err:
+     ret = -1;
+ xcpmd_out:
+-    acpi_events_cleanup();
+     xcpmd_dbus_cleanup();
+     netlink_cleanup();
+ 

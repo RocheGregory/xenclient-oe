@@ -12,7 +12,7 @@ SRC_URI = "file://initramfs-tcsd.conf \
 
 IMAGE_FSTYPES = "cpio.gz"
 IMAGE_INSTALL = "busybox-static lvm2-static initramfs-xenclient"
-IMAGE_INSTALL += "kernel-module-tpm kernel-module-tpm-bios"
+IMAGE_INSTALL += "kernel-module-tpm"
 IMAGE_INSTALL += "kernel-module-tpm-tis"
 IMAGE_INSTALL += "tpm-tools-sa xenclient-initramfs-shared-libs"
 IMAGE_INSTALL += "xenclient-sha1sum"

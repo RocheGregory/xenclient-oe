@@ -1,0 +1,165 @@
+From d4d70aa5960a7fbf3d887663f144c324a10619ba Mon Sep 17 00:00:00 2001
+From: Imre Deak <imre.deak@intel.com>
+Date: Wed, 19 Nov 2014 15:30:04 +0200
+Subject: [PATCH] drm/i915: sanitize rps irq disabling
+
+When disabling the RPS interrupts there is a tricky dependency between
+the thread disabling the interrupts, the RPS interrupt handler and the
+corresponding RPS work. The RPS work can reenable the interrupts, so
+there is no straightforward order in the disabling thread to (1) make
+sure that any RPS work is flushed and to (2) disable all RPS
+interrupts. Currently this is solved by masking the interrupts using two
+separate mask registers (first level display IMR and PM IMR) and doing
+the disabling when all first level interrupts are disabled.
+
+This works, but the requirement to run with all first level interrupts
+disabled is unnecessary making the suspend / unload time ordering of RPS
+disabling wrt. other unitialization steps difficult and error prone.
+Removing this restriction allows us to disable RPS early during suspend
+/ unload and forget about it for the rest of the sequence. By adding a
+more explicit method for avoiding the above race, it also becomes easier
+to prove its correctness. Finally currently we can hit the WARN in
+snb_update_pm_irq(), when a final RPS work runs with the first level
+interrupts already disabled. This won't lead to any problem (due to the
+separate interrupt masks), but with the change in this and the next
+patch we can get rid of the WARN, while leaving it in place for other
+scenarios.
+
+To address the above points, add a new RPS interrupts_enabled flag and
+use this during RPS disabling to avoid requeuing the RPS work and
+reenabling of the RPS interrupts. Since the interrupt disabling happens
+now in intel_suspend_gt_powersave(), we will disable RPS interrupts
+explicitly during suspend (and not just through the first level mask),
+but there is no problem doing so, it's also more consistent and allows
+us to unify more of the RPS disabling during suspend and unload time in
+the next patch.
+
+v2/v3:
+- rebase on patch "drm/i915: move rps irq disable one level up" in the
+  patchset
+
+Signed-off-by: Imre Deak <imre.deak@intel.com>
+Reviewed-by: Paulo Zanoni <paulo.r.zanoni@intel.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/i915/i915_drv.h |  6 +++++-
+ drivers/gpu/drm/i915/i915_irq.c | 23 ++++++++++++++++-------
+ drivers/gpu/drm/i915/intel_pm.c | 17 +++++++++--------
+ 3 files changed, 30 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index a8cfb14..4f08160 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -998,8 +998,12 @@ struct intel_rps_ei {
+ };
+ 
+ struct intel_gen6_power_mgmt {
+-	/* work and pm_iir are protected by dev_priv->irq_lock */
++	/*
++	 * work, interrupts_enabled and pm_iir are protected by
++	 * dev_priv->irq_lock
++	 */
+ 	struct work_struct work;
++	bool interrupts_enabled;
+ 	u32 pm_iir;
+ 
+ 	/* Frequencies are stored in potentially platform dependent multiples.
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index 56b3053..283756f 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -274,6 +274,7 @@ void gen6_enable_rps_interrupts(struct drm_device *dev)
+ 	spin_lock_irq(&dev_priv->irq_lock);
+ 	WARN_ON(dev_priv->rps.pm_iir);
+ 	WARN_ON(I915_READ(gen6_pm_iir(dev_priv)) & dev_priv->pm_rps_events);
++	dev_priv->rps.interrupts_enabled = true;
+ 	gen6_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
+ 	spin_unlock_irq(&dev_priv->irq_lock);
+ }
+@@ -282,14 +283,16 @@ void gen6_disable_rps_interrupts(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 
++	spin_lock_irq(&dev_priv->irq_lock);
++	dev_priv->rps.interrupts_enabled = false;
++	spin_unlock_irq(&dev_priv->irq_lock);
++
++	cancel_work_sync(&dev_priv->rps.work);
++
+ 	I915_WRITE(GEN6_PMINTRMSK, INTEL_INFO(dev_priv)->gen >= 8 ?
+ 		   ~GEN8_PMINTR_REDIRECT_TO_NON_DISP : ~0);
+ 	I915_WRITE(gen6_pm_ier(dev_priv), I915_READ(gen6_pm_ier(dev_priv)) &
+ 				~dev_priv->pm_rps_events);
+-	/* Complete PM interrupt masking here doesn't race with the rps work
+-	 * item again unmasking PM interrupts because that is using a different
+-	 * register (PMIMR) to mask PM interrupts. The only risk is in leaving
+-	 * stale bits in PMIIR and PMIMR which gen6_enable_rps will clean up. */
+ 
+ 	spin_lock_irq(&dev_priv->irq_lock);
+ 	dev_priv->rps.pm_iir = 0;
+@@ -1135,6 +1138,11 @@ static void gen6_pm_rps_work(struct work_struct *work)
+ 	int new_delay, adj;
+ 
+ 	spin_lock_irq(&dev_priv->irq_lock);
++	/* Speed up work cancelation during disabling rps interrupts. */
++	if (!dev_priv->rps.interrupts_enabled) {
++		spin_unlock_irq(&dev_priv->irq_lock);
++		return;
++	}
+ 	pm_iir = dev_priv->rps.pm_iir;
+ 	dev_priv->rps.pm_iir = 0;
+ 	/* Make sure not to corrupt PMIMR state used by ringbuffer on GEN6 */
+@@ -1708,11 +1716,12 @@ static void gen6_rps_irq_handler(struct drm_i915_private *dev_priv, u32 pm_iir)
+ 
+ 	if (pm_iir & dev_priv->pm_rps_events) {
+ 		spin_lock(&dev_priv->irq_lock);
+-		dev_priv->rps.pm_iir |= pm_iir & dev_priv->pm_rps_events;
+ 		gen6_disable_pm_irq(dev_priv, pm_iir & dev_priv->pm_rps_events);
++		if (dev_priv->rps.interrupts_enabled) {
++			dev_priv->rps.pm_iir |= pm_iir & dev_priv->pm_rps_events;
++			queue_work(dev_priv->wq, &dev_priv->rps.work);
++		}
+ 		spin_unlock(&dev_priv->irq_lock);
+-
+-		queue_work(dev_priv->wq, &dev_priv->rps.work);
+ 	}
+ 
+ 	if (INTEL_INFO(dev_priv)->gen >= 8)
+diff --git a/drivers/gpu/drm/i915/intel_pm.c b/drivers/gpu/drm/i915/intel_pm.c
+index c5b2636..96a948a 100644
+--- a/drivers/gpu/drm/i915/intel_pm.c
++++ b/drivers/gpu/drm/i915/intel_pm.c
+@@ -6186,9 +6186,17 @@ void intel_suspend_gt_powersave(struct drm_device *dev)
+ 	/* Interrupts should be disabled already to avoid re-arming. */
+ 	WARN_ON(intel_irqs_enabled(dev_priv));
+ 
++	if (INTEL_INFO(dev)->gen < 6)
++		return;
++
+ 	flush_delayed_work(&dev_priv->rps.delayed_resume_work);
+ 
+-	cancel_work_sync(&dev_priv->rps.work);
++	/*
++	 * TODO: disable RPS interrupts on GEN9+ too once RPS support
++	 * is added for it.
++	 */
++	if (INTEL_INFO(dev)->gen < 9)
++		gen6_disable_rps_interrupts(dev);
+ 
+ 	/* Force GPU to min freq during suspend */
+ 	gen6_rps_idle(dev_priv);
+@@ -6217,13 +6225,6 @@ void intel_disable_gt_powersave(struct drm_device *dev)
+ 		else
+ 			gen6_disable_rps(dev);
+ 
+-		/*
+-		 * TODO: disable RPS interrupts on GEN9+ too once RPS support
+-		 * is added for it.
+-		 */
+-		if (INTEL_INFO(dev)->gen < 9)
+-			gen6_disable_rps_interrupts(dev);
+-
+ 		dev_priv->rps.enabled = false;
+ 		mutex_unlock(&dev_priv->rps.hw_lock);
+ 	}

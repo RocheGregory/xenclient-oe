@@ -1,0 +1,107 @@
+From 2eb5252e2fffc52745a672152c7df597f4041045 Mon Sep 17 00:00:00 2001
+From: Imre Deak <imre.deak@intel.com>
+Date: Wed, 19 Nov 2014 15:30:05 +0200
+Subject: [PATCH] drm/i915: disable rps irqs earlier during suspend/unload
+
+After the previous patch RPS disabling doesn't depend any more on the
+first level interrupts being disabled, so we can move it everywhere
+earlier. Doing so let's us think about the uninitialization steps
+afterwards independently of any asynchronous RPS events that can happen
+atm. It also makes the system/runtime suspend time RPS disabling more
+uniform. Finally this gets rid of the WARN in
+intel_suspend_gt_powersave(), which we can hit if a final RPS work runs
+after we disabled the first level interrupts.
+
+Testcase: igt/pm_rpm
+Reference: https://bugs.freedesktop.org/show_bug.cgi?id=82939
+Signed-off-by: Imre Deak <imre.deak@intel.com>
+Reviewed-by: Paulo Zanoni <paulo.r.zanoni@intel.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/i915/i915_drv.c      | 9 +++------
+ drivers/gpu/drm/i915/intel_display.c | 6 +++---
+ drivers/gpu/drm/i915/intel_pm.c      | 3 ---
+ 3 files changed, 6 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+index 122ea95..19558d6 100644
+--- a/drivers/gpu/drm/i915/i915_drv.c
++++ b/drivers/gpu/drm/i915/i915_drv.c
+@@ -584,6 +584,8 @@ static int i915_drm_suspend(struct drm_device *dev)
+ 			return error;
+ 		}
+ 
++		intel_suspend_gt_powersave(dev);
++
+ 		/*
+ 		 * Disable CRTCs directly since we want to preserve sw state
+ 		 * for _thaw. Also, power gate the CRTC power wells.
+@@ -595,15 +597,11 @@ static int i915_drm_suspend(struct drm_device *dev)
+ 
+ 		intel_dp_mst_suspend(dev);
+ 
+-		flush_delayed_work(&dev_priv->rps.delayed_resume_work);
+-
+ 		intel_runtime_pm_disable_interrupts(dev_priv);
+ 		intel_hpd_cancel_work(dev_priv);
+ 
+ 		intel_suspend_encoders(dev_priv);
+ 
+-		intel_suspend_gt_powersave(dev);
+-
+ 		intel_suspend_hw(dev);
+ 	}
+ 
+@@ -1393,9 +1391,8 @@ static int intel_runtime_suspend(struct device *device)
+ 	i915_gem_release_all_mmaps(dev_priv);
+ 	mutex_unlock(&dev->struct_mutex);
+ 
+-	flush_delayed_work(&dev_priv->rps.delayed_resume_work);
+-	intel_runtime_pm_disable_interrupts(dev_priv);
+ 	intel_suspend_gt_powersave(dev);
++	intel_runtime_pm_disable_interrupts(dev_priv);
+ 
+ 	ret = intel_suspend_complete(dev_priv);
+ 	if (ret) {
+diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+index 32cec9d..ca4b787 100644
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -13540,11 +13540,13 @@ void intel_modeset_cleanup(struct drm_device *dev)
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 	struct drm_connector *connector;
+ 
++	intel_disable_gt_powersave(dev);
++
+ 	intel_backlight_unregister(dev);
+ 
+ 	/*
+ 	 * Interrupts and polling as the first thing to avoid creating havoc.
+-	 * Too much stuff here (turning of rps, connectors, ...) would
++	 * Too much stuff here (turning of connectors, ...) would
+ 	 * experience fancy races otherwise.
+ 	 */
+ 	intel_irq_uninstall(dev_priv);
+@@ -13561,8 +13563,6 @@ void intel_modeset_cleanup(struct drm_device *dev)
+ 
+ 	intel_disable_fbc(dev);
+ 
+-	intel_disable_gt_powersave(dev);
+-
+ 	ironlake_teardown_rc6(dev);
+ 
+ 	mutex_unlock(&dev->struct_mutex);
+diff --git a/drivers/gpu/drm/i915/intel_pm.c b/drivers/gpu/drm/i915/intel_pm.c
+index 96a948a..41c51fe 100644
+--- a/drivers/gpu/drm/i915/intel_pm.c
++++ b/drivers/gpu/drm/i915/intel_pm.c
+@@ -6183,9 +6183,6 @@ void intel_suspend_gt_powersave(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 
+-	/* Interrupts should be disabled already to avoid re-arming. */
+-	WARN_ON(intel_irqs_enabled(dev_priv));
+-
+ 	if (INTEL_INFO(dev)->gen < 6)
+ 		return;
+ 

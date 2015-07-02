@@ -1,0 +1,144 @@
+From a72fbc3a14f071d75bccb07ab5148d44f0af77eb Mon Sep 17 00:00:00 2001
+From: Imre Deak <imre.deak@intel.com>
+Date: Wed, 5 Nov 2014 20:48:31 +0200
+Subject: [PATCH] drm/i915: unify gen6/gen8 pm irq helpers
+
+The helpers to enable/disable PM IRQs for GEN6 and GEN8 are the same
+except for the PM interrupt mask register, so abstract away this
+register in the GEN6 versions and use these everywhere.
+
+No functional change.
+
+Signed-off-by: Imre Deak <imre.deak@intel.com>
+Reviewed-by: Paulo Zanoni <paulo.r.zanoni@intel.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/i915/i915_irq.c  | 59 +++++++---------------------------------
+ drivers/gpu/drm/i915/intel_drv.h |  2 --
+ drivers/gpu/drm/i915/intel_pm.c  |  2 +-
+ 3 files changed, 11 insertions(+), 52 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index 5fff287..cf991bd 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -200,6 +200,11 @@ void gen5_disable_gt_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+ 	ilk_update_gt_irq(dev_priv, mask, 0);
+ }
+ 
++static u32 gen6_pm_imr(struct drm_i915_private *dev_priv)
++{
++	return INTEL_INFO(dev_priv)->gen >= 8 ? GEN8_GT_IMR(2) : GEN6_PMIMR;
++}
++
+ /**
+   * snb_update_pm_irq - update GEN6_PMIMR
+   * @dev_priv: driver private
+@@ -223,8 +228,8 @@ static void snb_update_pm_irq(struct drm_i915_private *dev_priv,
+ 
+ 	if (new_val != dev_priv->pm_irq_mask) {
+ 		dev_priv->pm_irq_mask = new_val;
+-		I915_WRITE(GEN6_PMIMR, dev_priv->pm_irq_mask);
+-		POSTING_READ(GEN6_PMIMR);
++		I915_WRITE(gen6_pm_imr(dev_priv), dev_priv->pm_irq_mask);
++		POSTING_READ(gen6_pm_imr(dev_priv));
+ 	}
+ }
+ 
+@@ -239,46 +244,6 @@ void gen6_disable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+ }
+ 
+ /**
+-  * bdw_update_pm_irq - update GT interrupt 2
+-  * @dev_priv: driver private
+-  * @interrupt_mask: mask of interrupt bits to update
+-  * @enabled_irq_mask: mask of interrupt bits to enable
+-  *
+-  * Copied from the snb function, updated with relevant register offsets
+-  */
+-static void bdw_update_pm_irq(struct drm_i915_private *dev_priv,
+-			      uint32_t interrupt_mask,
+-			      uint32_t enabled_irq_mask)
+-{
+-	uint32_t new_val;
+-
+-	assert_spin_locked(&dev_priv->irq_lock);
+-
+-	if (WARN_ON(!intel_irqs_enabled(dev_priv)))
+-		return;
+-
+-	new_val = dev_priv->pm_irq_mask;
+-	new_val &= ~interrupt_mask;
+-	new_val |= (~enabled_irq_mask & interrupt_mask);
+-
+-	if (new_val != dev_priv->pm_irq_mask) {
+-		dev_priv->pm_irq_mask = new_val;
+-		I915_WRITE(GEN8_GT_IMR(2), dev_priv->pm_irq_mask);
+-		POSTING_READ(GEN8_GT_IMR(2));
+-	}
+-}
+-
+-void gen8_enable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+-{
+-	bdw_update_pm_irq(dev_priv, mask, mask);
+-}
+-
+-void gen8_disable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+-{
+-	bdw_update_pm_irq(dev_priv, mask, 0);
+-}
+-
+-/**
+  * ibx_display_interrupt_update - update SDEIMR
+  * @dev_priv: driver private
+  * @interrupt_mask: mask of interrupt bits to update
+@@ -1118,12 +1083,8 @@ static void gen6_pm_rps_work(struct work_struct *work)
+ 	spin_lock_irq(&dev_priv->irq_lock);
+ 	pm_iir = dev_priv->rps.pm_iir;
+ 	dev_priv->rps.pm_iir = 0;
+-	if (INTEL_INFO(dev_priv->dev)->gen >= 8)
+-		gen8_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
+-	else {
+-		/* Make sure not to corrupt PMIMR state used by ringbuffer */
+-		gen6_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
+-	}
++	/* Make sure not to corrupt PMIMR state used by ringbuffer on GEN6 */
++	gen6_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
+ 	spin_unlock_irq(&dev_priv->irq_lock);
+ 
+ 	/* Make sure we didn't queue anything we're not going to process. */
+@@ -1332,7 +1293,7 @@ static void gen8_rps_irq_handler(struct drm_i915_private *dev_priv, u32 pm_iir)
+ 
+ 	spin_lock(&dev_priv->irq_lock);
+ 	dev_priv->rps.pm_iir |= pm_iir & dev_priv->pm_rps_events;
+-	gen8_disable_pm_irq(dev_priv, pm_iir & dev_priv->pm_rps_events);
++	gen6_disable_pm_irq(dev_priv, pm_iir & dev_priv->pm_rps_events);
+ 	spin_unlock(&dev_priv->irq_lock);
+ 
+ 	queue_work(dev_priv->wq, &dev_priv->rps.work);
+diff --git a/drivers/gpu/drm/i915/intel_drv.h b/drivers/gpu/drm/i915/intel_drv.h
+index 5c622ad..d93697a 100644
+--- a/drivers/gpu/drm/i915/intel_drv.h
++++ b/drivers/gpu/drm/i915/intel_drv.h
+@@ -784,8 +784,6 @@ void gen5_enable_gt_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void gen5_disable_gt_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void gen6_enable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void gen6_disable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+-void gen8_enable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+-void gen8_disable_pm_irq(struct drm_i915_private *dev_priv, uint32_t mask);
+ void intel_runtime_pm_disable_interrupts(struct drm_i915_private *dev_priv);
+ void intel_runtime_pm_enable_interrupts(struct drm_i915_private *dev_priv);
+ static inline bool intel_irqs_enabled(struct drm_i915_private *dev_priv)
+diff --git a/drivers/gpu/drm/i915/intel_pm.c b/drivers/gpu/drm/i915/intel_pm.c
+index 5764936..9851af7 100644
+--- a/drivers/gpu/drm/i915/intel_pm.c
++++ b/drivers/gpu/drm/i915/intel_pm.c
+@@ -4669,7 +4669,7 @@ static void gen8_enable_rps_interrupts(struct drm_device *dev)
+ 
+ 	spin_lock_irq(&dev_priv->irq_lock);
+ 	WARN_ON(dev_priv->rps.pm_iir);
+-	gen8_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
++	gen6_enable_pm_irq(dev_priv, dev_priv->pm_rps_events);
+ 	I915_WRITE(GEN8_GT_IIR(2), dev_priv->pm_rps_events);
+ 	spin_unlock_irq(&dev_priv->irq_lock);
+ }

@@ -1,24 +1,25 @@
-DESCRIPTION = "Power Management Daemon for XenClient"
+DESCRIPTION = "Power Management Daemon for OpenXT"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4641e94ec96f98fabc56ff9cc48be14b"
-DEPENDS = "xenclient-idl dbus xen-tools pciutils libxcdbus libxenacpi xenclient-rpcgen-native libxcxenstore udev libnl"
+DEPENDS = "xenclient-idl dbus xen-tools pciutils libxcdbus xenclient-rpcgen-native libxcxenstore udev libnl"
 
 PV = "0+git${SRCPV}"
 
 SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/xctools.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
+           file://netlink-power-buttons.patch;patch=1 \
 	   file://xcpmd.initscript \
-"
+           "
 
 EXTRA_OECONF += "--with-idldir=${STAGING_IDLDIR}"
-
-CFLAGS_prepend += " -I${STAGING_INCDIR}/libnl3 "
-
-CFLAGS_append += " -Wno-unused-parameter -Wno-deprecated-declarations "
 
 S = "${WORKDIR}/git/xcpmd"
 
 inherit autotools xenclient update-rc.d pkgconfig
+
+CFLAGS_prepend += " -I${STAGING_INCDIR}/libnl3 "
+
+CFLAGS_append += " -Wno-unused-parameter -Wno-deprecated-declarations "
 
 INITSCRIPT_NAME = "xcpmd"
 INITSCRIPT_PARAMS = "defaults 60"

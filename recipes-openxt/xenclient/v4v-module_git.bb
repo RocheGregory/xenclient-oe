@@ -16,12 +16,13 @@ DEB_PKG_MAINTAINER = "Citrix Systems <customerservice@citrix.com>"
 
 DEPENDS_append_xenclient-nilfvm += " ${@deb_bootstrap_deps(d)} "
 
-inherit ${@"xenclient-simple-deb"if(d.getVar("MACHINE",1)=="xenclient-nilfvm")else("null")}
+inherit ${@"xenclient-simple-deb"if(bb.data.getVar("MACHINE",d,1)=="xenclient-nilfvm")else("null")}
 
 PV = "git${SRCPV}"
 
 SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/v4v.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
+           file://linux-3.x-get-unused-fd-compat.patch;patch=1 \
 	   file://DEBIAN_postinst"
 
 S = "${WORKDIR}/git/v4v"
