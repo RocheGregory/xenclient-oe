@@ -432,6 +432,61 @@ diff --git a/tboot/common/loader.c b/tboot/common/loader.c
 index d1da522..b03b007 100644
 --- a/tboot/common/loader.c
 +++ b/tboot/common/loader.c
+@@ -480,7 +480,6 @@ static void move_modules(multiboot_info_t **mbi)
+ 
+ bool launch_kernel(bool is_measured_launch)
+ {
+-    enum { ELF, LINUX } kernel_type;
+     void *kernel_entry_point;
+ 
+     if ( !verify_mbi(g_mbi) )
+@@ -494,36 +493,33 @@ bool launch_kernel(bool is_measured_launch)
+     void *kernel_image = (void *)m->mod_start;
+     size_t kernel_size = m->mod_end - m->mod_start;
+ 
+-    if ( is_elf_image(kernel_image, kernel_size) ) {
+-        printk("kernel is ELF format\n");
+-        kernel_type = ELF;
+-        /* fix for GRUB2, which may load modules into memory before tboot */
+-        move_modules(&g_mbi);
+-    }
+-    else {
+-        printk("assuming kernel is Linux format\n");
+-        kernel_type = LINUX;
+-    }
+-
+     /* print_mbi(g_mbi); */
+ 
+     kernel_image = remove_module(g_mbi, NULL);
+     if ( kernel_image == NULL )
+         return false;
+ 
+-    if ( kernel_type == ELF ) {
++    if ( is_elf_image(kernel_image, kernel_size) ) {
++        printk("kernel is ELF format\n");
++        /* fix for GRUB2 which may load modules into memory before tboot */
++        move_modules(&g_mbi);
+         if ( is_measured_launch )
+             adjust_kernel_cmdline(g_mbi, &_tboot_shared);
+         if ( !expand_elf_image((elf_header_t *)kernel_image,
+                                &kernel_entry_point) )
+             return false;
++
++        /* launch succeeded, so clear error codes */
++        write_tb_error(TB_ERR_NONE);
++
+         printk("transfering control to kernel @%p...\n", kernel_entry_point);
+         /* (optionally) pause when transferring to kernel */
+         if ( g_vga_delay > 0 )
+             delay(g_vga_delay * 1000);
+         return jump_elf_image(kernel_entry_point);
+     }
+-    else if ( kernel_type == LINUX ) {
++    else {
++        printk("assuming kernel is linux formar\n");
+         m = (module_t *)g_mbi->mods_addr;
+         void *initrd_image = (void *)m->mod_start;
+         size_t initrd_size = m->mod_end - m->mod_start;
 @@ -531,6 +527,10 @@ bool launch_kernel(bool is_measured_launch)
          expand_linux_image(kernel_image, kernel_size,
                             initrd_image, initrd_size,
