@@ -1,0 +1,82 @@
+diff --git a/util/grub-setup.c b/util/grub-setup.c
+index 993b020..a81c684 100644
+--- a/util/grub-setup.c
++++ b/util/grub-setup.c
+@@ -83,6 +83,8 @@ static struct argp_option options[] = {
+    N_("use GRUB files in the directory DIR [default=%s]"), 0},
+   {"device-map",  'm', N_("FILE"), 0,
+    N_("use FILE as the device map [default=%s]"), 0},
++  {"offset-sectors", 'o', "offset", 0,
++   N_("offset sector numbers in blocklist by N"), 0},
+   {"force",       'f', 0,      0,
+    N_("install even if problems are detected"), 0},
+   {"skip-fs-probe",'s',0,      0,
+@@ -135,6 +137,7 @@ struct arguments
+   int allow_floppy;
+   char *device;
+   int add_rs_codes;
++  grub_disk_addr_t sector_offset;
+ };
+ 
+ static error_t
+@@ -178,6 +181,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
+         arguments->dev_map = xstrdup (arg);
+         break;
+ 
++      case 'o':
++        arguments->sector_offset = strtoul(arg, NULL, 0);
++        break;
++
+       case 'f':
+         arguments->force = 1;
+         break;
+@@ -315,7 +322,7 @@ main (int argc, char *argv[])
+ 		   arguments.core_file ? : DEFAULT_CORE_FILE,
+ 		   dest_dev, arguments.force,
+ 		   arguments.fs_probe, arguments.allow_floppy,
+-		   arguments.add_rs_codes);
++		   arguments.add_rs_codes, arguments.sector_offset);
+ 
+   /* Free resources.  */
+   grub_fini_all ();
+diff --git a/util/setup.c b/util/setup.c
+index 9fb91a8..cf28f0f 100644
+--- a/util/setup.c
++++ b/util/setup.c
+@@ -140,6 +140,7 @@ struct blocklists
+ #endif
+   grub_uint16_t last_length;
+   grub_disk_addr_t first_sector;
++  grub_disk_addr_t sector_offset;
+ };
+ 
+ /* Helper for setup.  */
+@@ -150,6 +151,8 @@ save_blocklists (grub_disk_addr_t sector, unsigned offset, unsigned length,
+   struct blocklists *bl = data;
+   struct grub_boot_blocklist *prev = bl->block + 1;
+   grub_uint64_t seclen;
++  
++  sector += bl->sector_offset;
+ 
+   grub_util_info ("saving <%"  GRUB_HOST_PRIuLONG_LONG ",%u,%u>",
+ 		  (unsigned long long) sector, offset, length);
+@@ -249,7 +252,8 @@ SETUP (const char *dir,
+        const char *boot_file, const char *core_file,
+        const char *dest, int force,
+        int fs_probe, int allow_floppy,
+-       int add_rs_codes __attribute__ ((unused))) /* unused on sparc64 */
++       int add_rs_codes __attribute__ ((unused)), /* unused on sparc64 */
++       grub_disk_addr_t sector_offset)
+ {
+   char *core_path;
+   char *boot_img, *core_img, *boot_path;
+@@ -263,6 +267,9 @@ SETUP (const char *dir,
+   struct blocklists bl;
+ 
+   bl.first_sector = (grub_disk_addr_t) -1;
++  
++  // Store the sector offset specified
++  bl.sector_offset = sector_offset;
+ 
+ #ifdef GRUB_SETUP_BIOS
+   bl.current_segment =
