@@ -1,6 +1,7 @@
 diff --git a/docs/error_handling.txt b/docs/error_handling.txt
-index e69de29..b124657 100644
---- a/docs/error_handling.txt
+new file mode 100644
+index 0000000..b124657
+--- /dev/null
 +++ b/docs/error_handling.txt
 @@ -0,0 +1,219 @@
 +Goal:
@@ -429,28 +430,31 @@ index f794ca1..0ed4608 100644
      /* we can't leave the system in a state without valid measurements of
         about-to-execute code in the PCRs, so this is a fatal error */
 diff --git a/tboot/common/loader.c b/tboot/common/loader.c
-index d1da522..b03b007 100644
+index d1da522..99f569d 100644
 --- a/tboot/common/loader.c
 +++ b/tboot/common/loader.c
-@@ -531,6 +527,10 @@ bool launch_kernel(bool is_measured_launch)
-         expand_linux_image(kernel_image, kernel_size,
-                            initrd_image, initrd_size,
-                            &kernel_entry_point, is_measured_launch);
-+
+@@ -517,6 +517,10 @@ bool launch_kernel(bool is_measured_launch)
+         if ( !expand_elf_image((elf_header_t *)kernel_image,
+                                &kernel_entry_point) )
+             return false;
++        
 +        /* launch succeeded, so clear error codes */
 +        write_tb_error(TB_ERR_NONE);
 +
          printk("transfering control to kernel @%p...\n", kernel_entry_point);
          /* (optionally) pause when transferring to kernel */
          if ( g_vga_delay > 0 )
-@@ -538,7 +538,6 @@ bool launch_kernel(bool is_measured_launch)
-         return jump_linux_image(kernel_entry_point);
-     }
- 
--    printk("unknown kernel type\n");
-     return false;
- }
- 
+@@ -531,6 +535,10 @@ bool launch_kernel(bool is_measured_launch)
+         expand_linux_image(kernel_image, kernel_size,
+                            initrd_image, initrd_size,
+                            &kernel_entry_point, is_measured_launch);
++        
++        /* launch succeeded, so clear error codes */
++        write_tb_error(TB_ERR_NONE);
++
+         printk("transfering control to kernel @%p...\n", kernel_entry_point);
+         /* (optionally) pause when transferring to kernel */
+         if ( g_vga_delay > 0 )
 diff --git a/tboot/common/paging.c b/tboot/common/paging.c
 index 209d5ff..2a854f4 100644
 --- a/tboot/common/paging.c
