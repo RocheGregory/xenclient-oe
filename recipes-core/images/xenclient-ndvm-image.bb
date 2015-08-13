@@ -15,7 +15,7 @@ export IMAGE_BASENAME = "xenclient-ndvm-image"
 
 ANGSTROM_EXTRA_INSTALL += ""
 
-DEPENDS = "packagegroup-base intel-e1000e"
+DEPENDS = "packagegroup-base"
 IMAGE_INSTALL = "\
     ${ROOTFS_PKGMANAGE} \
     modules \
