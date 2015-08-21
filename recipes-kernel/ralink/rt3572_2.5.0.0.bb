@@ -20,6 +20,10 @@ S = "${WORKDIR}/2011_0427_RT3572_Linux_STA_v2.5.0.0.DPO"
 DEPENDS = "virtual/kernel"
 inherit module-base
 
+CFLAGS_append += " -Wno-error=date-time "
+
+EXTRA_OEMAKE = "'CFLAGS=${CFLAGS} -I${S}/include"
+
 addtask move_lic before do_populate_lic before do_configure after do_unpack
 
 do_move_lic () {
@@ -28,7 +32,7 @@ do_move_lic () {
 
 do_compile() {
     sed -i '/export OSABL/ iLINUX_SRC = "${STAGING_KERNEL_DIR}"' ${S}/Makefile
-    make
+    oe_runmake
 }
 
 do_install() {
