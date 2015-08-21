@@ -10,6 +10,8 @@ PV = "0+git${SRCPV}"
 SRCREV = "${AUTOREV}"
 SRC_URI = "git://${OPENXT_GIT_MIRROR}/installer.git;protocol=${OPENXT_GIT_PROTOCOL};branch=${OPENXT_BRANCH} \
           file://new-busybox-dialog.patch \
+          file://change-dom0-size.patch \
+          file://new-fdisk-tweaks.patch \
           "
 
 S = "${WORKDIR}/git"
