@@ -106,15 +106,16 @@ mkdir -p /boot/system/grub
 msg "Copying XenClient GRUB config and helper files"
 cp -f /usr/share/xenclient/bootloader/grub.cfg \
       /usr/share/xenclient/bootloader/unifont.pf2 \
-      /usr/lib/grub/i386-pc/*.mod \
-      /usr/lib/grub/i386-pc/*.lst \
       /usr/lib/grub/i386-pc/*.img /boot/system/grub
+mkdir -p /boot/system/grub/i386-pc
+cp -f /usr/lib/grub/i386-pc/*.mod \
+      /usr/lib/grub/i386-pc/*.lst \/boot/system/grub/i386-pc
 
 msg "Copying XenClient bootloader images"
 /usr/share/xenclient/install-bootloader-images "$lang"
 
 msg "Creating core.img"
-grub-mkimage $verbose --output=/boot/system/grub/core.img --prefix="(lvm/xenclient-boot)/grub" -O i386-pc normal ext2 part_msdos part_gpt biosdisk lvm linux serial boot multiboot gzio gfxterm_background png vbe keystatus
+grub-mkimage $verbose --output=/boot/system/grub/core.img --prefix="(lvm/xenclient-boot)/grub" -O i386-pc ext2 part_msdos part_gpt biosdisk lvm
 
 msg "Mapping dmgrub"
 dmsetup create dmgrub /tmp/table.dmgrub.tmp
@@ -124,7 +125,7 @@ msg "Clearing bootsector"
 dd if=/dev/zero of=/tmp/dmgrub bs=512 count=1
 
 msg "Running grub-setup"
-grub-bios-setup --force $verbose -b boot.img -d /boot/system/grub /dev/sda
+grub-bios-setup --force $verbose -b boot.img -d /boot/system/grub /dev/$pv_disk
 if [ "$?" != "0" ]; then
     echo "grub-setup failed. This is a fatal error."
     dmsetup remove dmgrub
