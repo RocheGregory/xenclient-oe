@@ -17,3 +17,5 @@ SRC_URI += " \
 
 PR = "r1"
 
+# Set a custom kernel version suffix, also affect kernel file name
+#LOCALVERSION = "-dom0"
