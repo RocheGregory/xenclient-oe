@@ -104,6 +104,8 @@ SRC_URI = "${XEN_SRC_URI};name=source \
     file://stubdomain-msi-irq-access.patch;striplevel=1 \
     file://workaround-nehalem-igd-vtd.patch;patch=1 \
     file://xen-x86-Fix-up-rules-when-forcing-mno-sse.patch;patch=1 \
+    file://xen-Scan-the-initramfs-payload-for-microcode-blob.patch \
+    file://xen-Check-whether-the-microcode-is-correct.patch \
 "
 
 SRC_URI[source.md5sum] := "${XEN_SRC_MD5SUM}"

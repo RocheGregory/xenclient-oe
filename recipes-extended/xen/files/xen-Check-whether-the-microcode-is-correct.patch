@@ -1,0 +1,62 @@
+From 4deea8515b1caba8803816399068f2a75d65f8ad Mon Sep 17 00:00:00 2001
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Fri, 27 Sep 2013 10:25:08 +0200
+Subject: [PATCH] x86/microcode: Check whether the microcode is correct
+
+We do the microcode code update in two steps - the presmp:
+'microcode_presmp_init' and when CPUs are brought up: 'microcode_init'.
+The earlier performs the microcode update on the BSP - but
+unfortunately it does not check whether the update failed. Which means
+that we might try later to update a incorrect payload on the rest of
+CPUs.
+
+This patch handles this odd situation.
+
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Reviewed-by: Andrew Cooper <andrew.cooper3@citrix.com>
+Acked-by: Keir Fraser <keir@xen.org>
+---
+ xen/arch/x86/microcode.c |   17 ++++++++++++++++-
+ 1 files changed, 16 insertions(+), 1 deletions(-)
+
+diff --git a/xen/arch/x86/microcode.c b/xen/arch/x86/microcode.c
+index e6344cf..091d5d1 100644
+--- a/xen/arch/x86/microcode.c
++++ b/xen/arch/x86/microcode.c
+@@ -418,6 +418,7 @@ static int __init microcode_presmp_init(void)
+         {
+             void *data;
+             size_t len;
++            int rc = 0;
+ 
+             if ( ucode_blob.size )
+             {
+@@ -430,10 +431,24 @@ static int __init microcode_presmp_init(void)
+                 data = ucode_mod_map(&ucode_mod);
+             }
+             if ( data )
+-                microcode_update_cpu(data, len);
++                rc = microcode_update_cpu(data, len);
++            else
++                rc = -ENOMEM;
+ 
+             if ( !ucode_blob.size )
+                 ucode_mod_map(NULL);
++
++            if ( rc )
++            {
++                if ( ucode_blob.size )
++                {
++                    xfree(ucode_blob.data);
++                    ucode_blob.size = 0;
++                    ucode_blob.data = NULL;
++                }
++                else
++                    ucode_mod.mod_end = 0;
++            }
+         }
+ 
+         register_cpu_notifier(&microcode_percpu_nfb);
+-- 
+1.7.2.5
+

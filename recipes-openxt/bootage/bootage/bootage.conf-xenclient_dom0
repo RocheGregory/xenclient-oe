@@ -41,9 +41,6 @@ dep mountall.sh
 script dbus-1
 dep
 
-script microcode_ctl
-dep surfman
-
 script xenclient-boot-sound
 dep surfman dbd
 
