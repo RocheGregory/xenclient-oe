@@ -34,6 +34,8 @@ RDEPENDS_${PN} = " \
     pciutils-ids \
     dosfstools \
     syslinux \
+    syslinux-ldlinux \
+    syslinux-libcom32 \
     syslinux-isohybrid \
     syslinux-isolinux \
     syslinux-mboot \
